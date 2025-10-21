@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package video_grpc_package;
+
+service RecoService {
+    rpc RecoSys (RecoRequest) returns (RecoResponse) {}
+}
+
+message RecoRequest {
+    int32 user_id = 1;
+    string channel_id = 2;
+    string network = 3;
+    int32 request_num = 4;
+}
+
+message RecoResponse {
+    repeated Video video = 1;
+    repeated int32 video_id_list = 2;
+}
+
+message Video {
+    int32 video_id = 1;
+    string title = 2;
+    double score = 3;
+}
