@@ -23,7 +23,8 @@ cd /data/azx_reco/yt_recall/item2vec_7
 python3 -u item2vec_7.py 1>>./log/${current_date}_log.txt 2>&1
 
 cd /data/azx_reco/yt_recall
-python3 -u content2redis.py 1>>./${current_date}_log.txt 2>&1
+python3 -u content2redis.py 1>>./log/${current_date}_log.txt 2>&1
 
-#01 05 * * * cd /data/azx_reco/yt_recall && sh -x run_item2vec.sh 1>>./$(date +%Y%m%d%H)_log.txt 2>&1
+#01 05 * * * cd /data/azx_reco/yt_recall && sh -x run_item2vec.sh 1>>./log.txt 2>&1
 
+#python3 -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. ./content.proto
