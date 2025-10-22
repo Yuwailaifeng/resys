@@ -18,7 +18,7 @@ def run(qps):
         stub = RecoServiceStub(channel)
         print("grpc server send...", "10.129.23.11:4245")
 
-        reco_request = RecoRequest(device_uuid="cd00c2d3-557d-4b85-844e-aac5a53e8f46", channel_id="1623515436593418240", request_num=30)
+        reco_request = RecoRequest(device_uuid="cd00c2d3-557d-4b85-844e-aac5a53e8f46", channel_id="1623515436593418240", request_num=300)
         # print("type(reco_request.device_uuid):", type(reco_request.device_uuid))
         # print("type(reco_request.channel_id):", type(reco_request.channel_id))
         # print("type(reco_request.request_num):", type(reco_request.request_num))
@@ -34,10 +34,9 @@ def run(qps):
         print("response: ", response)
         # print("response.content: ", response.content)
         # print("response.content_id_list: ", response.content_id_list)
-        print("len(response.content_id_list): ", len(response.content_id_list))
     print(qps, "Total time %s" % (time.time() - start))
 
 
 if __name__ == "__main__":
-    for qps in range(1):
+    for qps in range(100000):
         run(qps)

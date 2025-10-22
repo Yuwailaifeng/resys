@@ -7,17 +7,17 @@ service RecoService {
 }
 
 message RecoRequest {
-    int32 device_uuid = 1;
+    string device_uuid = 1;
     string channel_id = 2;
     int32 request_num = 3;
 }
 
 message RecoResponse {
     repeated Content content = 1;
-    repeated int32 content_id_list = 2;
+    repeated string content_id_list = 2;
 }
 
 message Content {
-    int32 content_id = 1;
+    string content_id = 1;
     int32 content_type = 2;
 }
