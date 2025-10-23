@@ -11,7 +11,7 @@ from content_pb2 import RecoRequest, RecoResponse
 from content_pb2_grpc import RecoServiceStub
 
 
-def run(qps):
+def run():
     start = time.time()
     # with grpc.insecure_channel("127.0.0.1:4245") as channel:
     with grpc.insecure_channel("10.129.23.11:4245") as channel:
@@ -35,9 +35,8 @@ def run(qps):
         # print("response.content: ", response.content)
         # print("response.content_id_list: ", response.content_id_list)
         print("len(response.content_id_list): ", len(response.content_id_list))
-    print(qps, "Total time %s" % (time.time() - start))
+    print("Total time %s" % (time.time() - start))
 
 
 if __name__ == "__main__":
-    for qps in range(1):
-        run(qps)
+    run()

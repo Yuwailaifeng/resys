@@ -65,7 +65,7 @@ class Reco(RecoServiceServicer):
                 pipeline.mget(redis_key_dict[content_type_label])
                 result = pipeline.execute()
                 recall_from_redis[content_type_label] = result[0]
-                print("Result: ", content_type_label, " reco_from_redis: ", len(redis_key_dict[content_type_label]), recall_from_redis[content_type_label])
+                print("Result: ", content_type_label, " reco_from_redis: ", len(redis_key_dict[content_type_label]), recall_from_redis.keys())
         print()
 
         content_reco_dict = {}
@@ -108,9 +108,10 @@ class Reco(RecoServiceServicer):
                         content_reco_dict[content_type_label].append(tmp_key)
                         tmp_list.append(item)
                         all_content += 1
-                        print(item2vec_count, user_count, all_content, item2vec_count + user_count + all_content)
+                        # print(item2vec_count, user_count, all_content, item2vec_count + user_count + all_content)
                         if (item2vec_count + user_count + all_content) >= request.request_num:
                             break
+            print(content_type_label, "item2vec_count, user_count, all_content, request.request_num: ", item2vec_count, user_count, all_content, request.request_num)
 
         reco_response = RecoResponse()
         content_id_list = []
@@ -121,13 +122,12 @@ class Reco(RecoServiceServicer):
                 response.content_type = content_type_id_dict[key]
                 content_id_list.append(content_id)
 
-        print("reco_response:", reco_response)
+        # print("reco_response:", reco_response)
 
         for idx in range(len(content_id_list)):
             print(idx, content_id_list[idx])
         print()
 
-        print("item2vec_count, user_count, all_content, request.request_num: ", item2vec_count, user_count, all_content, request.request_num)
         print("len(content_reco_dict)", len(content_reco_dict))
         print("len(content_id_list)", len(content_id_list))
         print("Total time %s" % (time.time() - start))
