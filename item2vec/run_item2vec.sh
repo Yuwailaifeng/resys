@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 # Authors: zhongxinan
 
-
 set -e
-
 
 source /etc/profile
 pyenv global 3.7.9
 source ~/.bashrc
+if [ $? -ne 0 ]; then
+    exit
+fi
 
 
 current_date=$(date +%Y-%m-%d\ %H:%M:%S)
