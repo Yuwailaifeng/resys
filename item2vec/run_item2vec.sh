@@ -7,17 +7,11 @@ set -e
 source /etc/profile
 pyenv global 3.7.9
 source ~/.bashrc
-if [ $? -ne 0 ]; then
-    exit
-fi
 
 
-current_date=$(date +%Y-%m-%d\ %H:%M:%S)
+#current_date=$(date +%Y-%m-%d\ %H:%M:%S)
 current_date=$(date +%Y%m%d%H)
 echo "${current_date}"
-if [ $? -ne 0 ]; then
-    exit
-fi
 
 
 cd /data/azx_reco/yt_recall/item2vec_1
@@ -87,6 +81,11 @@ fi
 #        sleep 2
 #    fi
 #done
+
+
+
+
+
 
 
 
