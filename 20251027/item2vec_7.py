@@ -34,14 +34,14 @@ print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 impala_hour = 5
 file_hour_list = []
 for idx in range(impala_hour):
-    file_hour = (datetime.datetime.now() - datetime.timedelta(days=impala_hour - idx)).date().strftime("%Y%m%d")
+    file_hour = (datetime.datetime.now() + datetime.timedelta(days=idx - impala_hour)).date().strftime("%Y%m%d")
     file_hour_list.append(file_hour)
 print(impala_hour, file_hour_list)
 
 content_hour = 30
 content_hour_list = []
 for idx in range(content_hour):
-    file_hour = (datetime.datetime.now() - datetime.timedelta(days=content_hour - idx)).date().strftime("%Y%m%d")
+    file_hour = (datetime.datetime.now() + datetime.timedelta(days=idx - content_hour)).date().strftime("%Y%m%d")
     content_hour_list.append(file_hour)
 print(content_hour, content_hour_list)
 
@@ -60,39 +60,21 @@ print(f"Impala版本: {cursor.fetchone()[0]}")
 
 sql_list = []
 for file_hour in file_hour_list:
-    # sql_list.append("""SELECT `device_uuid`, GROUP_CONCAT(DISTINCT CONCAT(CAST(`content_type` AS STRING), "|", CAST(`content_id_c` AS STRING)), ";") content_id_sequence FROM `dw_v2`.`user_ls_day_summary` WHERE `ds` = '""" + str(file_hour) + """' AND `content_type` = 1 AND `listen_dur_sum` > 3000 AND `device_uuid` IS NOT NULL AND `content_id_c` IS NOT NULL GROUP BY `device_uuid`""")
     sql_list.append("""
-        SELECT `device_uuid`, GROUP_CONCAT(DISTINCT CONCAT(CAST(`content_type` AS STRING), "|", CAST(`content_id_c` AS STRING)), ";") content_id_sequence
-        FROM `dw_v2`.`user_ls_day_summary`
-        WHERE `ds` = '""" + str(file_hour) + """' AND `content_type` = 1 AND `device_uuid` IS NOT NULL AND `content_id_c` IS NOT NULL
+        SELECT `device_uuid`, GROUP_CONCAT(DISTINCT CONCAT(CAST(`content_type` AS STRING), "|", CAST(`content_id` AS STRING)), ";") content_id_sequence 
+        FROM `dw_v2`.`user_ls_day_summary` 
+        WHERE `ds` = '""" + str(file_hour) + """' AND `content_type` = 1 AND `device_uuid` IS NOT NULL AND `content_id` IS NOT NULL 
         GROUP BY `device_uuid`
     """)
 
 try:
     with connection.cursor() as cursor:
-        # # sql = """SELECT CONCAT(CAST(`content_type` AS STRING), "|", `content_type_name`)  content, COUNT(*) content_count FROM `dw_v2`.`user_ls_day_summary` WHERE `ds` = '20251009' GROUP BY `content` ORDER BY `content_count` DESC"""
-        # # sql = """SELECT * FROM `dm`.`recommend_waterfall_v2_content_list` WHERE `ds` = '""" + str(file_hour_list[-1]) + """' AND `content_type` = '专辑'"""
-        # # sql = """SELECT DISTINCT `content_id_c`, `content_name_f` FROM `dw_v2`.`user_ls_day_summary` WHERE `ds` = '20251013' AND `content_type` = 1"""
-        # # sql = """SELECT `id`, `album_name`, `listen_count` FROM `dict`.`content_basic_2_dict_t_album` WHERE `listen_count` >= 0"""
-        # sql = """SELECT * FROM `dict`.`content_basic_2_dict_t_album` WHERE `enable_status` = 1 AND `delete_flag` = 0"""
-        # print(sql)
-        #
-        # cursor.execute(sql)
-        # result = cursor.fetchall()
-        # columns = [item[0] for item in cursor.description]
-        # tempDf = pd.DataFrame(result, columns=columns)
-        #
-        # print("`dict`.`content_basic_2_dict_t_album`", file_hour_list[-1], len(tempDf), columns)
-        # tempDf.to_csv("./impala_data/" + str(file_hour_list[-1]) + ".content_basic_2_dict_t_album.txt", header=columns, index=False, sep="\t", encoding="UTF-8")
-
-        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
         sql = """
-            SELECT t1.content_id_f, t1.page_name, t2.album_name, t1.content_type, t1.channel_id
+            SELECT t1.content_id, t1.page_name, t2.single_name, t1.content_id_f, t2.media_type, t1.content_type, t1.channel_id
             FROM dm.recommend_waterfall_v2_content_list t1
-            LEFT JOIN dict.content_basic_2_dict_t_album_for_recs t2
-            ON t1.content_id_f = t2.id
-            WHERE t1.ds = '""" + str(file_hour_list[-1]) + """' AND t1.content_type = '专辑'
+            LEFT JOIN dict.content_basic_2_dict_t_single t2
+            ON t1.content_id = t2.id
+            WHERE t1.ds = '""" + str(file_hour_list[-1]) + """' AND t1.content_type = '单曲'
         """
         print(sql)
 
@@ -101,8 +83,8 @@ try:
         columns = [item[0] for item in cursor.description]
         tempDf = pd.DataFrame(result, columns=columns)
 
-        print("content_album_for_recs", file_hour_list[-1], len(tempDf), columns)
-        tempDf.to_csv("./model_data/" + str(file_hour_list[-1]) + ".content_album_for_recs.txt", header=columns, index=False, sep="\t", encoding="UTF-8")
+        print("content_single_for_recs", file_hour_list[-1], len(tempDf), columns)
+        tempDf.to_csv("./model_data/" + str(file_hour_list[-1]) + ".content_single_for_recs.txt", header=columns, index=False, sep="\t", encoding="UTF-8")
 
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -141,7 +123,7 @@ finally:
 id_name_dict = {}
 page_name_dict = {}
 channel_id_dict = {}
-with open("./model_data/" + str(file_hour_list[-1]) + ".content_album_for_recs.txt", encoding="UTF-8") as file:
+with open("./model_data/" + str(file_hour_list[-1]) + ".content_single_for_recs.txt", encoding="UTF-8") as file:
     for line in file.readlines():
         line = line.strip().split("\t")
         page_name_dict.setdefault(line[0], [])
@@ -149,7 +131,7 @@ with open("./model_data/" + str(file_hour_list[-1]) + ".content_album_for_recs.t
         if line[1] not in page_name_dict[line[0]]:
             page_name_dict[line[0]].append(line[1])
             channel_id_dict[line[0]].append(line[-1])
-        id_name_dict[line[0]] = "#".join(page_name_dict[line[0]]) + "|" + line[2] + "|" + "#".join(channel_id_dict[line[0]])
+        id_name_dict[line[0]] = line[3] + "|" + "#".join(page_name_dict[line[0]]) + "|" + line[2] + "|" + line[5] + "|" + "#".join(channel_id_dict[line[0]])
 print("len(id_name_dict)", len(id_name_dict))
 
 with open("./model_data/" + str(content_hour_list[-1]) + ".id_name_dict.txt", "w", encoding="UTF-8") as file:
@@ -251,8 +233,6 @@ def i2i_idx_name(similarity_score_list, key_list, id_name_dict, process_idx, sta
     print(process_idx, "i2i_idx_name start", start_time, start_idx, start_idx + batch_size)
     res_idx_list = []
     res_name_list = []
-    res_idx_channel = []
-    res_name_channel = []
     for query_idx in range(start_idx, start_idx + batch_size):
         if query_idx >= len(similarity_score_list):
             break
@@ -262,30 +242,9 @@ def i2i_idx_name(similarity_score_list, key_list, id_name_dict, process_idx, sta
         res_name = [key_list[idx] + "|" + id_name_dict[key_list[idx]] for idx in similarity_idx]
         res_idx_list.append(key_list[query_idx] + "|" + id_name_dict[key_list[query_idx]].split("|")[-1] + "\t" + ";".join(res_idx[1:]))
         res_name_list.append(key_list[query_idx] + "|" + id_name_dict[key_list[query_idx]] + "\t" + " ; ".join(res_name[1:]))
-
-        tmp_idx_dict = {}
-        tmp_name_dict = {}
-        for page_name, channel_id in zip(
-                id_name_dict[key_list[query_idx]].split("|")[0].split("#"),
-                id_name_dict[key_list[query_idx]].split("|")[-1].split("#"),
-        ):
-            tmp_key = key_list[query_idx] + "_" + channel_id + "|" + page_name
-            tmp_idx_dict.setdefault(tmp_key, [])
-            tmp_name_dict.setdefault(tmp_key, [])
-            for idx in similarity_idx:
-                for tmp_channel_id in id_name_dict[key_list[idx]].split("|")[-1].split("#"):
-                    if channel_id == tmp_channel_id:
-                        tmp_idx_dict[tmp_key].append(key_list[idx])
-                        tmp_name_dict[tmp_key].append(key_list[idx] + "|" + id_name_dict[key_list[idx]])
-        for k, v in tmp_idx_dict.items():
-            res_idx_channel.append(k + "\t" + ";".join(v[1:1001]))
-        for k, v in tmp_name_dict.items():
-            key = k.split("_")[0] + "|" + id_name_dict[k.split("_")[0]].split("|")[1] + "|" + k.split("_")[1]
-            res_name_channel.append(key + "\t" + " ; ".join(v[1:101]))
-
     done_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(process_idx, "i2i_idx_name done", done_time, start_idx, start_idx + batch_size)
-    return res_idx_list, res_name_list, res_idx_channel, res_name_channel
+    return res_idx_list, res_name_list
 
 
 key_list = []
@@ -323,7 +282,7 @@ similarity_score_list = similarity_v1.tolist()
 print("len(similarity_score_list)", len(similarity_score_list))
 
 pool = Pool(pool_num)
-batch_size = 700
+batch_size = 1000
 process_num = math.ceil(len(similarity_score_list) / batch_size)
 print("process_num", process_num, len(similarity_score_list), batch_size)
 results = []
@@ -349,13 +308,9 @@ pool.join()
 
 res_idx_list = []
 res_name_list = []
-res_idx_channel = []
-res_name_channel = []
 for item in results:
     res_idx_list.extend(item.get()[0])
     res_name_list.extend(item.get()[1])
-    res_idx_channel.extend(item.get()[2])
-    res_name_channel.extend(item.get()[3])
 # for i in range(10):
 #     print(i, res_idx_list[i])
 # print(len(res_idx_list))
@@ -375,18 +330,16 @@ with open("./model_data/" + str(content_hour_list[-1]) + ".vectors_similarity_na
     for line in res_name_list:
         file.write(line + "\n")
 
-with open("./model_data/" + str(content_hour_list[-1]) + ".vectors_similarity_channel.txt", "w", encoding="UTF-8") as file:
-    for line in res_idx_channel:
-        file.write(line + "\n")
-
-with open("./model_data/" + str(content_hour_list[-1]) + ".vectors_similarity_name_channel.txt", "w", encoding="UTF-8") as file:
-    for line in res_name_channel:
-        file.write(line + "\n")
+# with open("./model_data/vectors_similarity.txt", "w", encoding="UTF-8") as file:
+#     for line in res_idx_list:
+#         file.write(line + "\n")
+#
+# with open("./model_data/vectors_similarity_name.txt", "w", encoding="UTF-8") as file:
+#     for line in res_name_list:
+#         file.write(line + "\n")
 
 print("len(res_idx_list)", len(res_idx_list))
 print("len(res_name_list)", len(res_name_list))
-print("len(res_idx_channel)", len(res_idx_channel))
-print("len(res_name_channel)", len(res_name_channel))
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -419,7 +372,7 @@ def u2i_idx_name(user_his_seq_list, content_id_similarity_dict, id_name_dict, pr
             for item in unique_list:
                 if item in content_id_similarity_dict and content_id_similarity_dict[item][idx] not in unique_list:
                     tmp_item = content_id_similarity_dict[item][idx]
-                    for page_name, channel_id in zip(id_name_dict[tmp_item].split("|")[0].split("#"), id_name_dict[tmp_item].split("|")[-1].split("#")):
+                    for page_name, channel_id in zip(id_name_dict[tmp_item].split("|")[1].split("#"), id_name_dict[tmp_item].split("|")[-1].split("#")):
                         dict_key = device_uuid + "_" + channel_id + "|" + page_name
                         res_idx_dict.setdefault(dict_key, [])
                         res_name_dict.setdefault(device_uuid, [])
@@ -464,7 +417,7 @@ print("len(user_his_seq_list)", len(user_his_seq_list))
 user_his_seq_list = user_his_seq_list
 
 pool = Pool(pool_num * 2)
-batch_size = 30000
+batch_size = 20000
 process_num = math.ceil(len(user_his_seq_list) / batch_size)
 print("process_num", process_num, len(user_his_seq_list), batch_size)
 results = []
@@ -530,13 +483,13 @@ os.system("head -n 1000 " + "./model_data/" + str(content_hour_list[-1]) + ".use
 
 # # zip -r item2vec.zip item2vec -x "*.txt"
 #
-# 01  09 * * * source /etc/profile && pyenv global 3.7.9 && source ~/.bashrc && cd /data/azx_reco/yt_recall/item2vec_1 && /home/ubuntu/.pyenv/versions/3.7.9/bin/python3 -u ./item2vec_1.py 1>>./log.txt 2>&1
+# 07  09 * * * source /etc/profile && pyenv global 3.7.9 && source ~/.bashrc && cd /data/azx_reco/yt_recall/item2vec_7 && /home/ubuntu/.pyenv/versions/3.7.9/bin/python3 -u ./item2vec_7.py 1>>./log.txt 2>&1
 
 os.system("ls -lah ./impala_data")
 os.system("ls -lah ./sample_data")
 os.system("ls -lah ./model_data")
 
-hdfs_file_path = "/user/admin/an_zhong_xin/yt_recall/item2vec_1/" + str(content_hour_list[-1] + "/")
+hdfs_file_path = "/user/admin/an_zhong_xin/yt_recall/item2vec_7/" + str(content_hour_list[-1] + "/")
 print("hdfs_file_path", hdfs_file_path)
 
 print("hadoop fs -mkdir " + hdfs_file_path)
@@ -564,7 +517,7 @@ os.system("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco.txt")
 print("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco_name.txt")
 os.system("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco_name.txt")
 
-print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), " item2vec_1 DONE!")
+print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), " item2vec_7 DONE!")
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #

@@ -29,30 +29,33 @@ print("file_hour", file_hour)
 
 recall_name_list = [
     "album",
+    # "broadcast",
+    # "column",
     "single",
 ]
 
 all_content_recall_file_list = [
     "item2vec_1/model_data/" + str(file_hour) + ".content_album_for_recs.txt",
+    # "item2vec_2/model_data/" + str(file_hour) + ".content_broadcast_for_recs.txt",
+    # "item2vec_3/model_data/" + str(file_hour) + ".content_column_for_recs.txt",
     "item2vec_7/model_data/" + str(file_hour) + ".content_single_for_recs.txt",
 ]
 
 user_count_recall_file_list = [
     "item2vec_1/model_data/" + str(file_hour) + ".content_count.txt",
+    # "item2vec_2/model_data/" + str(file_hour) + ".content_count.txt",
+    # "item2vec_3/model_data/" + str(file_hour) + ".content_count.txt",
     "item2vec_7/model_data/" + str(file_hour) + ".content_count.txt",
 ]
 
-i2i_recall_file_list = [
-    "item2vec_1/model_data/" + str(file_hour) + ".vectors_similarity_channel.txt",
-    "item2vec_7/model_data/" + str(file_hour) + ".vectors_similarity_channel.txt",
-]
-
-u2i_recall_file_list = [
+item2vec_recall_file_list = [
     "item2vec_1/model_data/" + str(file_hour) + ".user_content_reco.txt",
+    # "item2vec_2/model_data/" + str(file_hour) + ".user_content_reco.txt",
+    # "item2vec_3/model_data/" + str(file_hour) + ".user_content_reco.txt",
     "item2vec_7/model_data/" + str(file_hour) + ".user_content_reco.txt",
 ]
 
-# print("i2i_recall_file_list", i2i_recall_file_list)
+# print("item2vec_recall_file_list", item2vec_recall_file_list)
 
 for file_name in all_content_recall_file_list:
     os.system("wc -l " + file_name)
@@ -60,10 +63,7 @@ for file_name in all_content_recall_file_list:
 for file_name in user_count_recall_file_list:
     os.system("wc -l " + file_name)
 
-for file_name in i2i_recall_file_list:
-    os.system("wc -l " + file_name)
-
-for file_name in u2i_recall_file_list:
+for file_name in item2vec_recall_file_list:
     os.system("wc -l " + file_name)
 
 batch_size = 10000
@@ -111,7 +111,7 @@ with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
     print("Result: user_count_reco_dict: ", len(user_count_reco_dict), ": ", result)
 
 done_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-print("user_count done", key_num, done_time, "\n")
+print("user_count done", done_time)
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -152,162 +152,169 @@ with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
     print("Result: all_content_reco_dict: ", len(all_content_reco_dict), ": ", result)
 
 done_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-print("all_content done", key_num, done_time, "\n")
+print("all_content done", done_time)
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-print("album_i2i start", start_time)
+print("album_item2vec start", start_time)
 
 count = 0
-album_i2i_dict = {}
-with open(i2i_recall_file_list[0], encoding="UTF-8") as file:
+album_reco_dict = {}
+with open(item2vec_recall_file_list[0], encoding="UTF-8") as file:
     for line in file.readlines():
         try:
             line = line.strip().split("\t")
             if len(line) != 2:
                 print(line)
                 continue
-            album_i2i_dict[line[0].split("|")[0] + "_album_i2i"] = line[1]
+            album_reco_dict.setdefault(count // batch_size, {})
+            album_reco_dict[count // batch_size][line[0].split("|")[0] + "_album_item2vec"] = line[1]
             count += 1
         except:
             print(line)
 
-print("len(album_i2i_dict)", len(album_i2i_dict), count)
+print("len(album_reco_dict)", len(album_reco_dict), count)
 key_num += count
 
 with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
     # print("redis_version: ", client.info()["redis_version"])
     # client.flushdb()
     pipeline = client.pipeline()
-    pipeline.mset(album_i2i_dict)
-    result = pipeline.execute()
-    print("Result: album_i2i_dict: ", len(album_i2i_dict), ": ", result)
-
-done_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-print("album_i2i done", key_num, done_time, "\n")
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-print("single_i2i start", start_time)
-
-count = 0
-single_i2i_dict = {}
-with open(i2i_recall_file_list[1], encoding="UTF-8") as file:
-    for line in file.readlines():
-        try:
-            line = line.strip().split("\t")
-            if len(line) != 2:
-                print(line)
-                continue
-            single_i2i_dict[line[0].split("|")[0] + "_single_i2i"] = line[1]
-            count += 1
-        except:
-            print(line)
-
-print("len(single_i2i_dict)", len(single_i2i_dict), count)
-key_num += count
-
-with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
-    # print("redis_version: ", client.info()["redis_version"])
-    # client.flushdb()
-    pipeline = client.pipeline()
-    pipeline.mset(single_i2i_dict)
-    result = pipeline.execute()
-    print("Result: single_i2i_dict: ", len(single_i2i_dict), ": ", result)
-
-done_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-print("single_i2i done", key_num, done_time, "\n")
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-print("album_u2i start", start_time)
-
-count = 0
-album_u2i_dict = {}
-with open(u2i_recall_file_list[0], encoding="UTF-8") as file:
-    for line in file.readlines():
-        try:
-            line = line.strip().split("\t")
-            if len(line) != 2:
-                print(line)
-                continue
-            album_u2i_dict.setdefault(count // batch_size, {})
-            album_u2i_dict[count // batch_size][line[0].split("|")[0] + "_album_u2i"] = line[1]
-            count += 1
-        except:
-            print(line)
-
-print("len(album_u2i_dict)", len(album_u2i_dict), count)
-key_num += count
-
-with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
-    # print("redis_version: ", client.info()["redis_version"])
-    # client.flushdb()
-    pipeline = client.pipeline()
-    for key, value in album_u2i_dict.items():
+    for key, value in album_reco_dict.items():
         # print(key, value)
         pipeline.mset(value)
         result = pipeline.execute()
-        print("Result: album_u2i_dict: ", key, ": ", result)
+        print("Result: album_reco_dict: ", key, ": ", result)
 
 done_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-print("album_u2i done", key_num, done_time, "\n")
+print("album_item2vec done", done_time)
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+# start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+# print("broadcast_item2vec start", start_time)
+#
+# count = 0
+# broadcast_reco_dict = {}
+# with open(item2vec_recall_file_list[1], encoding="UTF-8") as file:
+#     for line in file.readlines():
+#         try:
+#             line = line.strip().split("\t")
+#             if len(line) != 2:
+#                 print(line)
+#                 continue
+#             device_uuid = line[0].split("|")[0]
+#             reco_content_id_list = [item.split("|")[0] for item in line[1].split(";")]
+#             broadcast_reco_dict.setdefault(count // batch_size, {})
+#             broadcast_reco_dict[count // batch_size][device_uuid + "_broadcast_item2vec"] = ";".join(reco_content_id_list[:top_k])
+#             count += 1
+#         except:
+#             print(line)
+#
+# print("len(broadcast_reco_dict)", len(broadcast_reco_dict), count)
+# key_num += count
+#
+# with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
+#     # print("redis_version: ", client.info()["redis_version"])
+#     pipeline = client.pipeline()
+#     for key, value in broadcast_reco_dict.items():
+#         # print(key, value)
+#         pipeline.mset(value)
+#         result = pipeline.execute()
+#         print("Result: broadcast_reco_dict: ", key, ": ", result)
+#
+# done_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+# print("broadcast_item2vec done", done_time)
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+# start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+# print("column_item2vec start", start_time)
+#
+# count = 0
+# column_reco_dict = {}
+# with open(item2vec_recall_file_list[2], encoding="UTF-8") as file:
+#     for line in file.readlines():
+#         try:
+#             line = line.strip().split("\t")
+#             if len(line) != 2:
+#                 print(line)
+#                 continue
+#             device_uuid = line[0].split("|")[0]
+#             reco_content_id_list = [item.split("|")[0] for item in line[1].split(";")]
+#             column_reco_dict.setdefault(count // batch_size, {})
+#             column_reco_dict[count // batch_size][device_uuid + "_column_item2vec"] = ";".join(reco_content_id_list[:top_k])
+#             count += 1
+#         except:
+#             print(line)
+#
+# print("len(column_reco_dict)", len(column_reco_dict), count)
+# key_num += count
+#
+# with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
+#     # print("redis_version: ", client.info()["redis_version"])
+#     pipeline = client.pipeline()
+#     for key, value in column_reco_dict.items():
+#         # print(key, value)
+#         pipeline.mset(value)
+#         result = pipeline.execute()
+#         print("Result: column_reco_dict: key: ", key, ": ", result)
+#
+# done_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+# print("column_item2vec done", done_time)
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-print("single_u2i start", start_time)
+print("single_item2vec start", start_time)
 
 count = 0
-single_u2i_dict = {}
-with open(u2i_recall_file_list[1], encoding="UTF-8") as file:
+single_reco_dict = {}
+with open(item2vec_recall_file_list[3], encoding="UTF-8") as file:
     for line in file.readlines():
         try:
             line = line.strip().split("\t")
             if len(line) != 2:
                 print(line)
                 continue
-            single_u2i_dict.setdefault(count // batch_size, {})
-            single_u2i_dict[count // batch_size][line[0].split("|")[0] + "_single_u2i"] = line[1]
+            single_reco_dict.setdefault(count // batch_size, {})
+            single_reco_dict[count // batch_size][line[0].split("|")[0] + "_single_item2vec"] = line[1]
             count += 1
         except:
             print(line)
 
-print("len(single_u2i_dict)", len(single_u2i_dict), count)
+print("len(single_reco_dict)", len(single_reco_dict), count)
 key_num += count
 
 with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
     # print("redis_version: ", client.info()["redis_version"])
-    # client.flushdb()
     pipeline = client.pipeline()
-    for key, value in single_u2i_dict.items():
+    for key, value in single_reco_dict.items():
         # print(key, value)
         pipeline.mset(value)
         result = pipeline.execute()
-        print("Result: single_u2i_dict: key: ", key, ": ", result)
+        print("Result: single_reco_dict: key: ", key, ": ", result)
 
 done_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-print("single_u2i done", key_num, done_time, "\n")
+print("single_item2vec done", done_time)
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 print("len(all_content_reco_dict)", len(all_content_reco_dict))
 print("len(user_count_reco_dict)", len(user_count_reco_dict))
-print("len(album_i2i_dict)", len(album_i2i_dict))
-print("len(single_i2i_dict)", len(single_i2i_dict))
-print("len(album_u2i_dict)", len(album_u2i_dict))
-print("len(single_u2i_dict)", len(single_u2i_dict))
+print("len(album_reco_dict)", len(album_reco_dict))
+# print("len(broadcast_reco_dict)", len(broadcast_reco_dict))
+# print("len(column_reco_dict)", len(column_reco_dict))
+print("len(single_reco_dict)", len(single_reco_dict))
 print("key_num", key_num)
 
-print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), key_num, " content2redis DONE!")
+print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), " content2redis DONE!")
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #

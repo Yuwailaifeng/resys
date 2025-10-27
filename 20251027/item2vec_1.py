@@ -251,8 +251,6 @@ def i2i_idx_name(similarity_score_list, key_list, id_name_dict, process_idx, sta
     print(process_idx, "i2i_idx_name start", start_time, start_idx, start_idx + batch_size)
     res_idx_list = []
     res_name_list = []
-    res_idx_channel = []
-    res_name_channel = []
     for query_idx in range(start_idx, start_idx + batch_size):
         if query_idx >= len(similarity_score_list):
             break
@@ -262,30 +260,9 @@ def i2i_idx_name(similarity_score_list, key_list, id_name_dict, process_idx, sta
         res_name = [key_list[idx] + "|" + id_name_dict[key_list[idx]] for idx in similarity_idx]
         res_idx_list.append(key_list[query_idx] + "|" + id_name_dict[key_list[query_idx]].split("|")[-1] + "\t" + ";".join(res_idx[1:]))
         res_name_list.append(key_list[query_idx] + "|" + id_name_dict[key_list[query_idx]] + "\t" + " ; ".join(res_name[1:]))
-
-        tmp_idx_dict = {}
-        tmp_name_dict = {}
-        for page_name, channel_id in zip(
-                id_name_dict[key_list[query_idx]].split("|")[0].split("#"),
-                id_name_dict[key_list[query_idx]].split("|")[-1].split("#"),
-        ):
-            tmp_key = key_list[query_idx] + "_" + channel_id + "|" + page_name
-            tmp_idx_dict.setdefault(tmp_key, [])
-            tmp_name_dict.setdefault(tmp_key, [])
-            for idx in similarity_idx:
-                for tmp_channel_id in id_name_dict[key_list[idx]].split("|")[-1].split("#"):
-                    if channel_id == tmp_channel_id:
-                        tmp_idx_dict[tmp_key].append(key_list[idx])
-                        tmp_name_dict[tmp_key].append(key_list[idx] + "|" + id_name_dict[key_list[idx]])
-        for k, v in tmp_idx_dict.items():
-            res_idx_channel.append(k + "\t" + ";".join(v[1:1001]))
-        for k, v in tmp_name_dict.items():
-            key = k.split("_")[0] + "|" + id_name_dict[k.split("_")[0]].split("|")[1] + "|" + k.split("_")[1]
-            res_name_channel.append(key + "\t" + " ; ".join(v[1:101]))
-
     done_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(process_idx, "i2i_idx_name done", done_time, start_idx, start_idx + batch_size)
-    return res_idx_list, res_name_list, res_idx_channel, res_name_channel
+    return res_idx_list, res_name_list
 
 
 key_list = []
@@ -349,13 +326,9 @@ pool.join()
 
 res_idx_list = []
 res_name_list = []
-res_idx_channel = []
-res_name_channel = []
 for item in results:
     res_idx_list.extend(item.get()[0])
     res_name_list.extend(item.get()[1])
-    res_idx_channel.extend(item.get()[2])
-    res_name_channel.extend(item.get()[3])
 # for i in range(10):
 #     print(i, res_idx_list[i])
 # print(len(res_idx_list))
@@ -375,18 +348,16 @@ with open("./model_data/" + str(content_hour_list[-1]) + ".vectors_similarity_na
     for line in res_name_list:
         file.write(line + "\n")
 
-with open("./model_data/" + str(content_hour_list[-1]) + ".vectors_similarity_channel.txt", "w", encoding="UTF-8") as file:
-    for line in res_idx_channel:
-        file.write(line + "\n")
-
-with open("./model_data/" + str(content_hour_list[-1]) + ".vectors_similarity_name_channel.txt", "w", encoding="UTF-8") as file:
-    for line in res_name_channel:
-        file.write(line + "\n")
+# with open("./model_data/vectors_similarity.txt", "w", encoding="UTF-8") as file:
+#     for line in res_idx_list:
+#         file.write(line + "\n")
+#
+# with open("./model_data/vectors_similarity_name.txt", "w", encoding="UTF-8") as file:
+#     for line in res_name_list:
+#         file.write(line + "\n")
 
 print("len(res_idx_list)", len(res_idx_list))
 print("len(res_name_list)", len(res_name_list))
-print("len(res_idx_channel)", len(res_idx_channel))
-print("len(res_name_channel)", len(res_name_channel))
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
