@@ -282,7 +282,7 @@ similarity_score_list = similarity_v1.tolist()
 print("len(similarity_score_list)", len(similarity_score_list))
 
 pool = Pool(pool_num)
-batch_size = 5000
+batch_size = 1000
 process_num = math.ceil(len(similarity_score_list) / batch_size)
 print("process_num", process_num, len(similarity_score_list), batch_size)
 results = []
@@ -514,8 +514,7 @@ os.system("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco.txt")
 print("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco_name.txt")
 os.system("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco_name.txt")
 
-print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-print(str(content_hour_list[-1]) + " DONE!")
+print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), " item2vec_7 DONE!")
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #

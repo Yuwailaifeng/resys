@@ -532,8 +532,7 @@ os.system("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco.txt")
 print("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco_name.txt")
 os.system("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco_name.txt")
 
-print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-print(str(content_hour_list[-1]) + " DONE!")
+print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), " item2vec_1 DONE!")
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #

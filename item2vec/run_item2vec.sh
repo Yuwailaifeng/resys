@@ -49,29 +49,31 @@ echo "${current_date}"
 #fi
 
 
-#30 05 * * * cd /data/azx_reco/yt_recall && sh -x run_item2vec.sh 1>>./log/log.txt 2>&1
+#30 05 * * * cd /data/azx_reco/yt_recall && sh -x run_item2vec.sh 1>>./log/$(date +"\%Y-\%m-\%d_\%H").log.txt 2>&1
+#01 14 * * * cd /data/azx_reco/yt_recall && sh -x run_item2vec.sh 1>>./log/$(date +"\%Y\%m\%d\%H").log.txt 2>&1
 #ps aux | grep grpc_server | awk '{print $2}' | xargs kill -9
+#ps aux | grep item2vec | awk '{print $2}' | xargs kill -9
 #python3 -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. ./content.proto
 #nohup python3 -u grpc_server.py  1>>./log.txt 2>&1 &
 
 
-command_1="cd /data/azx_reco/yt_recall/item2vec_1"
-command_2="python3 -u item2vec_1.py >>./item2vec_1/log/${current_date}_log.txt"
-retries=3
-count=0
-while true; do
-    echo ${command_1} ${command_2}
-    ${command_1} && ${command_2} && break
-    if [ $count -eq $retries ]; then
-        echo "EXIT" $(date +%Y-%m-%d\ %H:%M:%S)
-        exit 1
-    fi
-    echo "Retry..." $(date +%Y-%m-%d\ %H:%M:%S)
-    sleep 30
-    count=$((count+1))
-    echo ${count}
-done
-echo ${command_1} ${command_2} "SUCCESS" $(date +%Y-%m-%d\ %H:%M:%S)
+#command_1="cd /data/azx_reco/yt_recall/item2vec_1"
+#command_2="python3 -u item2vec_1.py >>./item2vec_1/log/${current_date}_log.txt"
+#retries=3
+#count=0
+#while true; do
+#    echo ${command_1} ${command_2}
+#    ${command_1} && ${command_2} && break
+#    if [ $count -eq $retries ]; then
+#        echo "EXIT" $(date +%Y-%m-%d\ %H:%M:%S)
+#        exit
+#    fi
+#    echo "Retry..." $(date +%Y-%m-%d\ %H:%M:%S)
+#    sleep 30
+#    count=$((count+1))
+#    echo ${count}
+#done
+#echo ${command_1} ${command_2} "SUCCESS" $(date +%Y-%m-%d\ %H:%M:%S)
 
 
 command_1="cd /data/azx_reco/yt_recall/item2vec_7"
@@ -83,7 +85,7 @@ while true; do
     ${command_1} && ${command_2} && break
     if [ $count -eq $retries ]; then
         echo "EXIT" $(date +%Y-%m-%d\ %H:%M:%S)
-        exit 1
+        exit
     fi
     echo "Retry..." $(date +%Y-%m-%d\ %H:%M:%S)
     sleep 30
@@ -102,7 +104,7 @@ while true; do
     ${command_1} && ${command_2} && break
     if [ $count -eq $retries ]; then
         echo "EXIT" $(date +%Y-%m-%d\ %H:%M:%S)
-        exit 1
+        exit
     fi
     echo "Retry..." $(date +%Y-%m-%d\ %H:%M:%S)
     sleep 30

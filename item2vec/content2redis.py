@@ -314,8 +314,7 @@ print("len(album_reco_dict)", len(album_reco_dict))
 print("len(single_reco_dict)", len(single_reco_dict))
 print("key_num", key_num)
 
-print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-print(str(file_hour) + " DONE!")
+print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), " content2redis DONE!")
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
