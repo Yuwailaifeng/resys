@@ -42,6 +42,11 @@ user_count_recall_file_list = [
     "item2vec_7/model_data/" + str(file_hour) + ".content_count.txt",
 ]
 
+user_trigger_file_list = [
+    "item2vec_1/sample_data/" + str(file_hour) + ".device_uuid_content_id_sequence.txt",
+    "item2vec_7/sample_data/" + str(file_hour) + ".device_uuid_content_id_sequence.txt",
+]
+
 i2i_recall_file_list = [
     "item2vec_1/model_data/" + str(file_hour) + ".vectors_similarity_channel.txt",
     "item2vec_7/model_data/" + str(file_hour) + ".vectors_similarity_channel.txt",
@@ -52,12 +57,13 @@ u2i_recall_file_list = [
     "item2vec_7/model_data/" + str(file_hour) + ".user_content_reco.txt",
 ]
 
-# print("i2i_recall_file_list", i2i_recall_file_list)
-
 for file_name in all_content_recall_file_list:
     os.system("wc -l " + file_name)
 
 for file_name in user_count_recall_file_list:
+    os.system("wc -l " + file_name)
+
+for file_name in user_trigger_file_list:
     os.system("wc -l " + file_name)
 
 for file_name in i2i_recall_file_list:
@@ -70,8 +76,10 @@ batch_size = 10000
 top_k = 1000
 key_num = 0
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 print("user_count start", start_time)
@@ -113,8 +121,10 @@ with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
 done_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 print("user_count done", key_num, done_time, "\n")
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 print("all_content start", start_time)
@@ -153,6 +163,76 @@ with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
 
 done_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 print("all_content done", key_num, done_time, "\n")
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+print("album_i2i_trigger start", start_time)
+
+count = 0
+album_i2i_trigger_dict = {}
+with open(user_trigger_file_list[0], encoding="UTF-8") as file:
+    for line in file.readlines():
+        try:
+            line = line.strip().split("\t")
+            if len(line) != 2:
+                print(line)
+                continue
+            album_i2i_trigger_dict[line[0] + "_album_i2i_trigger"] = line[1]
+            count += 1
+        except:
+            print(line)
+
+print("len(album_i2i_trigger_dict)", len(album_i2i_trigger_dict), count)
+key_num += count
+
+with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
+    # print("redis_version: ", client.info()["redis_version"])
+    # client.flushdb()
+    pipeline = client.pipeline()
+    pipeline.mset(album_i2i_trigger_dict)
+    result = pipeline.execute()
+    print("Result: album_i2i_trigger_dict: ", len(album_i2i_trigger_dict), ": ", result)
+
+done_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+print("album_i2i_trigger done", key_num, done_time, "\n")
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+print("single_i2i_trigger start", start_time)
+
+count = 0
+single_i2i_trigger_dict = {}
+with open(user_trigger_file_list[1], encoding="UTF-8") as file:
+    for line in file.readlines():
+        try:
+            line = line.strip().split("\t")
+            if len(line) != 2:
+                print(line)
+                continue
+            single_i2i_trigger_dict[line[0] + "_single_i2i_trigger"] = line[1]
+            count += 1
+        except:
+            print(line)
+
+print("len(single_i2i_trigger_dict)", len(single_i2i_trigger_dict), count)
+key_num += count
+
+with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
+    # print("redis_version: ", client.info()["redis_version"])
+    # client.flushdb()
+    pipeline = client.pipeline()
+    pipeline.mset(single_i2i_trigger_dict)
+    result = pipeline.execute()
+    print("Result: single_i2i_trigger_dict: ", len(single_i2i_trigger_dict), ": ", result)
+
+done_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+print("single_i2i_trigger done", key_num, done_time, "\n")
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -222,6 +302,8 @@ with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
 done_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 print("single_i2i done", key_num, done_time, "\n")
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -296,11 +378,15 @@ with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
 done_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 print("single_u2i done", key_num, done_time, "\n")
 
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 print("len(all_content_reco_dict)", len(all_content_reco_dict))
 print("len(user_count_reco_dict)", len(user_count_reco_dict))
+print("len(album_i2i_trigger_dict)", len(album_i2i_trigger_dict))
+print("len(single_i2i_trigger_dict)", len(single_i2i_trigger_dict))
 print("len(album_i2i_dict)", len(album_i2i_dict))
 print("len(single_i2i_dict)", len(single_i2i_dict))
 print("len(album_u2i_dict)", len(album_u2i_dict))

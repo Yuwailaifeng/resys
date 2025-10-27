@@ -17,34 +17,23 @@ from content_pb2 import RecoRequest, RecoResponse
 
 recall_content_type_list = [
     "album",
+    "broadcast",
+    "column",
     "single",
 ]
 
 recall_reason_list = [
-    "i2i",
+    "item2vec",
     "user_count",
     "all_content",
 ]
 
 content_type_id_dict = {
     "album": 1,
-    "single": 3,
+    "broadcast": 2,
+    "column": 3,
+    "single": 7,
 }
-
-
-# ALBUM(1, "专辑"),
-# COLUMN(2,"栏目"),
-# SINGLE(3,"单曲"),
-# COLUMN_SINGLE(4,"栏目单曲"),
-# RADIO(5,"广播"),
-# LIVE_ROOM_B(185, "B类直播间"),
-# NEWS(23, "资讯"),
-# ADVERTISING(150, "广告"),
-# TAG_REC(151, "标签簇"),
-
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
 class Reco(RecoServiceServicer):
@@ -57,7 +46,7 @@ class Reco(RecoServiceServicer):
             device_uuid,
             channel_id,
             request_num,
-            start,
+            start
         ]))
         print("request.device_uuid:", request.device_uuid, device_uuid)
         print("request.channel_id:", request.channel_id, channel_id)
@@ -143,11 +132,11 @@ class Reco(RecoServiceServicer):
                 response.content_type = content_type_id_dict[key]
                 content_id_list.append(content_id)
 
-        print("reco_response:", reco_response)
+        # print("reco_response:", reco_response)
 
-        # for idx in range(len(content_id_list)):
-        #     print(log_key, idx, content_id_list[idx])
-        # print()
+        for idx in range(len(content_id_list)):
+            print(log_key, idx, content_id_list[idx])
+        print()
 
         print(log_key, "len(content_reco_dict)", len(content_reco_dict))
         print(log_key, "len(content_id_list)", len(content_id_list))

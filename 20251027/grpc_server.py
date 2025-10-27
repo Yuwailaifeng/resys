@@ -17,18 +17,22 @@ from content_pb2 import RecoRequest, RecoResponse
 
 recall_content_type_list = [
     "album",
+    "broadcast",
+    "column",
     "single",
 ]
 
 recall_reason_list = [
-    "i2i",
+    "item2vec",
     "user_count",
     "all_content",
 ]
 
 content_type_id_dict = {
     "album": 1,
-    "single": 3,
+    "broadcast": 2,
+    "column": 3,
+    "single": 7,
 }
 
 
@@ -57,7 +61,7 @@ class Reco(RecoServiceServicer):
             device_uuid,
             channel_id,
             request_num,
-            start,
+            start
         ]))
         print("request.device_uuid:", request.device_uuid, device_uuid)
         print("request.channel_id:", request.channel_id, channel_id)
