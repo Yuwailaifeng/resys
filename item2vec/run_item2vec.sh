@@ -14,42 +14,39 @@ current_date=$(date +%Y%m%d%H)
 echo "${current_date}"
 
 
-cd /data/azx_reco/yt_recall/item2vec_1
-python3 -u item2vec_1.py 1>>./log/${current_date}_log.txt 2>&1
-if [ $? -ne 0 ]; then
-    exit 1
-fi
-
-
-cd /data/azx_reco/yt_recall/item2vec_2
-python3 -u item2vec_2.py 1>>./log/${current_date}_log.txt 2>&1
-if [ $? -ne 0 ]; then
-    exit 2
-fi
-
-
-cd /data/azx_reco/yt_recall/item2vec_3
-python3 -u item2vec_3.py 1>>./log/${current_date}_log.txt 2>&1
-if [ $? -ne 0 ]; then
-    exit 3
-fi
-
-
-cd /data/azx_reco/yt_recall/item2vec_7
-python3 -u item2vec_7.py 1>>./log/${current_date}_log.txt 2>&1
-if [ $? -ne 0 ]; then
-    exit 7
-fi
-
-
-cd /data/azx_reco/yt_recall
-python3 -u content2redis.py 1>>./log/${current_date}_log.txt 2>&1
-if [ $? -ne 0 ]; then
-    exit
-fi
-
-
-
+#cd /data/azx_reco/yt_recall/item2vec_1
+#python3 -u item2vec_1.py 1>>./log/${current_date}_log.txt 2>&1
+#if [ $? -ne 0 ]; then
+#    exit 1
+#fi
+#
+#
+#cd /data/azx_reco/yt_recall/item2vec_2
+#python3 -u item2vec_2.py 1>>./log/${current_date}_log.txt 2>&1
+#if [ $? -ne 0 ]; then
+#    exit 2
+#fi
+#
+#
+#cd /data/azx_reco/yt_recall/item2vec_3
+#python3 -u item2vec_3.py 1>>./log/${current_date}_log.txt 2>&1
+#if [ $? -ne 0 ]; then
+#    exit 3
+#fi
+#
+#
+#cd /data/azx_reco/yt_recall/item2vec_7
+#python3 -u item2vec_7.py 1>>./log/${current_date}_log.txt 2>&1
+#if [ $? -ne 0 ]; then
+#    exit 7
+#fi
+#
+#
+#cd /data/azx_reco/yt_recall
+#python3 -u content2redis.py 1>>./log/${current_date}_log.txt 2>&1
+#if [ $? -ne 0 ]; then
+#    exit
+#fi
 
 
 #30 05 * * * cd /data/azx_reco/yt_recall && sh -x run_item2vec.sh 1>>./log/log.txt 2>&1
@@ -58,44 +55,61 @@ fi
 #nohup python3 -u grpc_server.py  1>>./log.txt 2>&1 &
 
 
+command_1="cd /data/azx_reco/yt_recall/item2vec_1"
+command_2="python3 -u item2vec_1.py >>./item2vec_1/log/${current_date}_log.txt"
+retries=3
+count=0
+while true; do
+    echo ${command_1} ${command_2}
+    ${command_1} && ${command_2} && break
+    if [ $count -eq $retries ]; then
+        echo "EXIT" $(date +%Y-%m-%d\ %H:%M:%S)
+        exit 1
+    fi
+    echo "Retry..." $(date +%Y-%m-%d\ %H:%M:%S)
+    sleep 30
+    count=$((count+1))
+    echo ${count}
+done
+echo ${command_1} ${command_2} "SUCCESS" $(date +%Y-%m-%d\ %H:%M:%S)
 
 
+command_1="cd /data/azx_reco/yt_recall/item2vec_7"
+command_2="python3 -u item2vec_7.py >>./item2vec_7/log/${current_date}_log.txt"
+retries=3
+count=0
+while true; do
+    echo ${command_1} ${command_2}
+    ${command_1} && ${command_2} && break
+    if [ $count -eq $retries ]; then
+        echo "EXIT" $(date +%Y-%m-%d\ %H:%M:%S)
+        exit 1
+    fi
+    echo "Retry..." $(date +%Y-%m-%d\ %H:%M:%S)
+    sleep 30
+    count=$((count+1))
+    echo ${count}
+done
+echo ${command_1} ${command_2} "SUCCESS" $(date +%Y-%m-%d\ %H:%M:%S)
 
 
-#count=0
-#flag=1
-#while [ $flag -ne 0 ]
-#do
-#    #current_date=$(date +%Y-%m-%d\ %H:%M:%S)
-#    current_date=$(date +%Y%m%d%H)
-#    echo ${current_date}
-#    flag=$?
-#
-#    if [ $flag -eq 0 ]; then
-#        break
-#    else
-#        count=$[${count}+1]
-#        if [ ${count} -eq 3 ]; then
-#            break
-#        fi
-#        sleep 2
-#    fi
-#done
+command_1="cd /data/azx_reco/yt_recall"
+command_2="python3 -u content2redis.py >>./log/${current_date}_log.txt"
+retries=3
+count=0
+while true; do
+    echo ${command_1} ${command_2}
+    ${command_1} && ${command_2} && break
+    if [ $count -eq $retries ]; then
+        echo "EXIT" $(date +%Y-%m-%d\ %H:%M:%S)
+        exit 1
+    fi
+    echo "Retry..." $(date +%Y-%m-%d\ %H:%M:%S)
+    sleep 30
+    count=$((count+1))
+    echo ${count}
+done
+echo ${command_1} ${command_2} "SUCCESS" $(date +%Y-%m-%d\ %H:%M:%S)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-echo "${current_date} Done!"
+echo "${current_date} DONE!"
