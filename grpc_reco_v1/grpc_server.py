@@ -150,6 +150,10 @@ class Reco(RecoServiceServicer):
         print("album_i2i_reco_list ", album_i2i_reco_num, "len(content_reco_result)", len(content_reco_result))
 
         num = len(content_reco_result)
+        tmp_list = album_user_count[:10]
+        random.shuffle(tmp_list)
+        tmp_list.extend(album_user_count[10:])
+        album_user_count = tmp_list
         for contend_id in album_user_count:
             if len(content_reco_result) - num >= request_num:
                 break
@@ -183,6 +187,10 @@ class Reco(RecoServiceServicer):
         print("single_i2i_reco_list ", single_i2i_reco_num, "len(content_reco_result)", len(content_reco_result))
 
         num = len(content_reco_result)
+        tmp_list = single_user_count[:10]
+        random.shuffle(tmp_list)
+        tmp_list.extend(single_user_count[10:])
+        single_user_count = tmp_list
         for contend_id in single_user_count:
             if len(content_reco_result) - num >= request_num:
                 break
