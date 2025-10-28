@@ -19,7 +19,7 @@ def run(idx, device_uuid, channel_id):
         stub = RecoServiceStub(channel)
         print("grpc server send...", "10.129.23.11:4245")
 
-        reco_request = RecoRequest(device_uuid=device_uuid, channel_id=str(channel_id), request_num=50)
+        reco_request = RecoRequest(device_uuid=device_uuid, channel_id=str(channel_id), request_num=30)
         # print("type(reco_request.device_uuid):", type(reco_request.device_uuid))
         # print("type(reco_request.channel_id):", type(reco_request.channel_id))
         # print("type(reco_request.request_num):", type(reco_request.request_num))
@@ -51,19 +51,19 @@ if __name__ == "__main__":
     device_uuid_list = device_uuid_list[:10]
 
     channel_id_list = [
-        1624027415938576384,
-        1623994492711493632,
-        1625080144286928896,
-        1620974685804187648,
-        1623628664992366592,
-        1625081590034161664,
-        1625337162234990592,
-        1623983072225660928,
-        1623515436593418240,
-        1625081767709007872,
-        1623983440816939008,
-        1858721047596187648,
-        1625080080533475328,
+        # 1624027415938576384,
+        # 1623994492711493632,
+        # 1625080144286928896,
+        # 1620974685804187648,
+        # 1623628664992366592,
+        # 1625081590034161664,
+        # 1625337162234990592,
+        # 1623983072225660928,
+        # 1623515436593418240,
+        # 1625081767709007872,
+        # 1623983440816939008,
+        # 1858721047596187648,
+        # 1625080080533475328,
         1623993297578160128,
     ]
 
