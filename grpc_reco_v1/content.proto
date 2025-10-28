@@ -20,4 +20,5 @@ message RecoResponse {
 message Content {
     string content_id = 1;
     int32 content_type = 2;
+    string recall_reason = 3;
 }

@@ -180,6 +180,7 @@ class Reco(RecoServiceServicer):
             response = reco_response.content.add()
             response.content_id = content_id
             response.content_type = int(content_type)
+            response.recall_reason = recall_reason
             content_id_list.append(item)
 
         # print("reco_response:", reco_response)

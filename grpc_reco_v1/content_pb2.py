@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n\rcontent.proto\x12\x14\x63ontent_grpc_package\"K\n\x0bRecoRequest\x12\x13\n\x0b\x64\x65vice_uuid\x18\x01 \x01(\t\x12\x12\n\nchannel_id\x18\x02 \x01(\t\x12\x13\n\x0brequest_num\x18\x03 \x01(\x05\"W\n\x0cRecoResponse\x12.\n\x07\x63ontent\x18\x01 \x03(\x0b\x32\x1d.content_grpc_package.Content\x12\x17\n\x0f\x63ontent_id_list\x18\x02 \x03(\t\"3\n\x07\x43ontent\x12\x12\n\ncontent_id\x18\x01 \x01(\t\x12\x14\n\x0c\x63ontent_type\x18\x02 \x01(\x05\x32\x61\n\x0bRecoService\x12R\n\x07RecoSys\x12!.content_grpc_package.RecoRequest\x1a\".content_grpc_package.RecoResponse\"\x00\x62\x06proto3'
+  serialized_pb=b'\n\rcontent.proto\x12\x14\x63ontent_grpc_package\"K\n\x0bRecoRequest\x12\x13\n\x0b\x64\x65vice_uuid\x18\x01 \x01(\t\x12\x12\n\nchannel_id\x18\x02 \x01(\t\x12\x13\n\x0brequest_num\x18\x03 \x01(\x05\"W\n\x0cRecoResponse\x12.\n\x07\x63ontent\x18\x01 \x03(\x0b\x32\x1d.content_grpc_package.Content\x12\x17\n\x0f\x63ontent_id_list\x18\x02 \x03(\t\"J\n\x07\x43ontent\x12\x12\n\ncontent_id\x18\x01 \x01(\t\x12\x14\n\x0c\x63ontent_type\x18\x02 \x01(\x05\x12\x15\n\rrecall_reason\x18\x03 \x01(\t2a\n\x0bRecoService\x12R\n\x07RecoSys\x12!.content_grpc_package.RecoRequest\x1a\".content_grpc_package.RecoResponse\"\x00\x62\x06proto3'
 )
 
 
@@ -132,6 +132,13 @@ _CONTENT = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='recall_reason', full_name='content_grpc_package.Content.recall_reason', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
   ],
   extensions=[
   ],
@@ -145,7 +152,7 @@ _CONTENT = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=205,
-  serialized_end=256,
+  serialized_end=279,
 )
 
 _RECORESPONSE.fields_by_name['content'].message_type = _CONTENT
@@ -184,8 +191,8 @@ _RECOSERVICE = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=258,
-  serialized_end=355,
+  serialized_start=281,
+  serialized_end=378,
   methods=[
   _descriptor.MethodDescriptor(
     name='RecoSys',
