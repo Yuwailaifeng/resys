@@ -32,7 +32,7 @@ def run(idx, device_uuid, channel_id):
         # print("type(response): ", type(response))
         # print("type(response.content): ", type(response.content))
         # print("type(response.content_id_list): ", type(response.content_id_list))
-        # print("response: ", response)
+        print("response: ", response)
         # print("response.content: ", response.content)
         # print("response.content_id_list: ", response.content_id_list)
         print("len(response.content_id_list): ", len(response.content_id_list))
@@ -42,12 +42,13 @@ def run(idx, device_uuid, channel_id):
 if __name__ == "__main__":
 
     device_uuid_list = []
-    with open("../item2vec/impala_data/20251022.device_uuid_content_id.txt", encoding="UTF-8") as file:
+    # with open("../item2vec/impala_data/20251022.device_uuid_content_id.txt", encoding="UTF-8") as file:
+    with open("../item2vec/sample_data/20251027.device_uuid_content_id_sequence.txt", encoding="UTF-8") as file:
         for line in file.readlines():
             tmp = line.strip().split("\t")
             device_uuid_list.append(tmp[0])
     print("len(device_uuid_list)", len(device_uuid_list))
-    # device_uuid_list = device_uuid_list[:10]
+    device_uuid_list = device_uuid_list[:10]
 
     channel_id_list = [
         1624027415938576384,

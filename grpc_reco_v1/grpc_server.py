@@ -9,6 +9,7 @@ from concurrent import futures
 import grpc
 import logging
 import time
+import datetime
 import redis
 
 from content_pb2_grpc import add_RecoServiceServicer_to_server, RecoServiceServicer
@@ -21,7 +22,7 @@ recall_content_type_list = [
 ]
 
 recall_reason_list = [
-    "i2i",
+    "i2i_trigger",
     "user_count",
     "all_content",
 ]
@@ -57,7 +58,7 @@ class Reco(RecoServiceServicer):
             device_uuid,
             channel_id,
             request_num,
-            start,
+            datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         ]))
         print("request.device_uuid:", request.device_uuid, device_uuid)
         print("request.channel_id:", request.channel_id, channel_id)
@@ -68,88 +69,126 @@ class Reco(RecoServiceServicer):
         # print("context:", context)
         # print()
 
-        redis_key_dict = {}
+        redis_key_list = []
         for content_type_label in recall_content_type_list:
-            redis_key_dict.setdefault(content_type_label, [])
             for recall_reason_label in recall_reason_list:
-                if recall_reason_label == "item2vec":
-                    tmp_key = device_uuid + "_" + channel_id + "_" + content_type_label + "_" + recall_reason_label
+                if recall_reason_label == "i2i_trigger":
+                    tmp_key = device_uuid + "_" + content_type_label + "_" + recall_reason_label
                 else:
                     tmp_key = channel_id + "_" + content_type_label + "_" + recall_reason_label
-                redis_key_dict[content_type_label].append(tmp_key)
-                print(log_key, tmp_key)
+                redis_key_list.append(tmp_key)
+                print(log_key, tmp_key, len(redis_key_list))
 
-        recall_from_redis = {}
         with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
             pipeline = client.pipeline()
-            for content_type_label in recall_content_type_list:
-                pipeline.mget(redis_key_dict[content_type_label])
-                result = pipeline.execute()
-                recall_from_redis[content_type_label] = result[0]
-                print(log_key, "Result: ", content_type_label, " reco_from_redis: ", len(redis_key_dict[content_type_label]), recall_from_redis.keys())
+            pipeline.mget(redis_key_list)
+            result = pipeline.execute()
+            print(log_key, "Result: ", "reco_from_redis: ", len(result[0]))
+            print("result[0]", result[0][0])
+            album_i2i_trigger = result[0][0].decode("utf-8").split(";") if result[0][0] else []
+            album_user_count = result[0][1].decode("utf-8").split(";") if result[0][1] else []
+            album_all_content = result[0][2].decode("utf-8").split(";") if result[0][2] else []
+            single_i2i_trigger = result[0][3].decode("utf-8").split(";") if result[0][3] else []
+            single_user_count = result[0][4].decode("utf-8").split(";") if result[0][4] else []
+            single_all_content = result[0][5].decode("utf-8").split(";") if result[0][5] else []
+            print(log_key, "Result: ", "reco_from_redis: ", len(result[0]))
+            print(log_key, "len(album_i2i_trigger): ", len(album_i2i_trigger))
+            print(log_key, "len(album_user_count): ", len(album_user_count))
+            print(log_key, "len(album_all_content): ", len(album_all_content))
+            print(log_key, "len(single_i2i_trigger): ", len(single_i2i_trigger))
+            print(log_key, "len(single_user_count): ", len(single_user_count))
+            print(log_key, "len(single_all_content): ", len(single_all_content))
         print()
 
-        content_reco_dict = {}
-        for content_type_label in recall_content_type_list:
-            item2vec_count = 0
-            user_count = 0
-            all_content = 0
-            tmp_list = []
-            for recall_reason, content_id_str in zip(recall_reason_list, recall_from_redis[content_type_label]):
-                if not content_id_str:
-                    continue
-                if recall_reason == "item2vec":
-                    for item in content_id_str.decode("utf-8").split(";"):
-                        if item in tmp_list:
-                            continue
-                        tmp_key = item + "|" + content_type_label + "|" + recall_reason + "|" + str(content_type_id_dict[content_type_label])
-                        content_reco_dict.setdefault(content_type_label, [])
-                        content_reco_dict[content_type_label].append(tmp_key)
-                        tmp_list.append(item)
-                        item2vec_count += 1
-                        if item2vec_count >= 10:
-                            break
-                elif recall_reason == "user_count":
-                    for item in content_id_str.decode("utf-8").split(";"):
-                        if item in tmp_list:
-                            continue
-                        tmp_key = item + "|" + content_type_label + "|" + recall_reason + "|" + str(content_type_id_dict[content_type_label])
-                        content_reco_dict.setdefault(content_type_label, [])
-                        content_reco_dict[content_type_label].append(tmp_key)
-                        tmp_list.append(item)
-                        user_count += 1
-                        if user_count >= 10:
-                            break
-                elif recall_reason == "all_content":
-                    for item in content_id_str.decode("utf-8").split(";"):
-                        if item in tmp_list:
-                            continue
-                        tmp_key = item + "|" + content_type_label + "|" + recall_reason + "|" + str(content_type_id_dict[content_type_label])
-                        content_reco_dict.setdefault(content_type_label, [])
-                        content_reco_dict[content_type_label].append(tmp_key)
-                        tmp_list.append(item)
-                        all_content += 1
-                        # print(item2vec_count, user_count, all_content, item2vec_count + user_count + all_content)
-                        if (item2vec_count + user_count + all_content) >= request_num:
-                            break
-            print(log_key, content_type_label, "item2vec_count, user_count, all_content, request_num: ", item2vec_count, user_count, all_content, request.request_num)
+        album_i2i_reco_list = []
+        if len(album_i2i_trigger) > 0:
+            album_i2i_key_list = [item + "_" + channel_id + "_album_i2i" for item in album_i2i_trigger]
+            with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
+                pipeline = client.pipeline()
+                pipeline.mget(album_i2i_key_list)
+                result = pipeline.execute()
+                album_i2i_reco_list = [item.decode("utf-8").split(";") if item else [] for item in result[0]]
+                print(log_key, "Result: ", "album_i2i_reco_from_redis: ", len(result[0]))
+                print(log_key, "len(album_i2i_trigger): ", len(album_i2i_trigger))
+                print(log_key, "len(album_i2i_key_list): ", len(album_i2i_key_list))
+                print(log_key, "len(album_i2i_reco_list): ", len(album_i2i_reco_list))
+                print(log_key, "len(album_i2i_reco_list[0]): ", len(album_i2i_reco_list[0]))
+                print("album_i2i_trigger", album_i2i_trigger)
+                print("album_i2i_key_list", album_i2i_key_list)
+                for i in range(len(album_i2i_trigger)):
+                    print(i, "album_i2i_key_list", album_i2i_reco_list[i][:10])
+        print()
+
+        single_i2i_reco_list = []
+        if len(single_i2i_trigger) > 0:
+            single_i2i_key_list = [item + "_" + channel_id + "_single_i2i" for item in single_i2i_trigger]
+            with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
+                pipeline = client.pipeline()
+                pipeline.mget(single_i2i_key_list)
+                result = pipeline.execute()
+                single_i2i_reco_list = [item.decode("utf-8").split(";") if item else [] for item in result[0]]
+                print(log_key, "Result: ", "single_i2i_reco_from_redis: ", len(result[0]))
+                print(log_key, "len(single_i2i_trigger): ", len(single_i2i_trigger))
+                print(log_key, "len(single_i2i_key_list): ", len(single_i2i_key_list))
+                print(log_key, "len(single_i2i_reco_list): ", len(single_i2i_reco_list))
+                print(log_key, "len(single_i2i_reco_list[0]): ", len(single_i2i_reco_list[0]))
+                print("single_i2i_trigger", single_i2i_trigger)
+                print("single_i2i_key_list", single_i2i_key_list)
+                for i in range(len(single_i2i_trigger)):
+                    print(i, "single_i2i_reco_list", single_i2i_reco_list[i][:10])
+            print()
+
+        content_reco_result = []
+        if len(album_i2i_reco_list) > 0:
+            for idx in range(10):
+                for contend_id_list in album_i2i_reco_list:
+                    if len(contend_id_list) > idx:
+                        content_reco_result.append(contend_id_list[idx] + "|" + str(content_type_id_dict["album"]) + "|i2i")
+        print("album_i2i_reco_list ", "len(content_reco_result)", len(content_reco_result))
+
+        if len(album_user_count) > 0:
+            for idx in range(10):
+                content_reco_result.append(album_user_count[idx] + "|" + str(content_type_id_dict["album"]) + "|user_count")
+        print("album_user_count ", "len(content_reco_result)", len(content_reco_result))
+
+        if len(album_all_content) > 0:
+            for idx in range(10):
+                content_reco_result.append(album_all_content[idx] + "|" + str(content_type_id_dict["album"]) + "|all_content")
+        print("album_all_content ", "len(content_reco_result)", len(content_reco_result))
+
+        if len(single_i2i_reco_list) > 0:
+            for idx in range(10):
+                for contend_id_list in single_i2i_reco_list:
+                    if len(contend_id_list) > idx:
+                        content_reco_result.append(contend_id_list[idx] + "|" + str(content_type_id_dict["single"]) + "|i2i")
+        print("single_i2i_reco_list ", "len(content_reco_result)", len(content_reco_result))
+
+        if len(single_user_count) > 0:
+            for idx in range(10):
+                content_reco_result.append(single_user_count[idx] + "|" + str(content_type_id_dict["single"]) + "|user_count")
+        print("single_user_count ", "len(content_reco_result)", len(content_reco_result))
+
+        if len(single_all_content) > 0:
+            for idx in range(10):
+                content_reco_result.append(single_all_content[idx] + "|" + str(content_type_id_dict["single"]) + "|all_content")
+        print("single_all_content ", "len(content_reco_result)", len(content_reco_result))
 
         reco_response = RecoResponse()
         content_id_list = []
-        for key, value in content_reco_dict.items():
-            for content_id in value:
-                response = reco_response.content.add()
-                response.content_id = content_id
-                response.content_type = content_type_id_dict[key]
-                content_id_list.append(content_id)
+        for item in content_reco_result:
+            content_id, content_type, recall_reason = item.split("|")
+            response = reco_response.content.add()
+            response.content_id = content_id
+            response.content_type = int(content_type)
+            content_id_list.append(item)
 
-        print("reco_response:", reco_response)
+        # print("reco_response:", reco_response)
 
-        # for idx in range(len(content_id_list)):
-        #     print(log_key, idx, content_id_list[idx])
-        # print()
+        for idx in range(len(content_id_list)):
+            print(log_key, idx, content_id_list[idx])
+        print()
 
-        print(log_key, "len(content_reco_dict)", len(content_reco_dict))
+        print(log_key, "len(content_reco_result)", len(content_reco_result))
         print(log_key, "len(content_id_list)", len(content_id_list))
         print(log_key, "Total time %s" % (time.time() - start))
 
