@@ -59,7 +59,7 @@ echo "${current_date}"
 
 command_1="cd /data/azx_reco/yt_recall/item2vec_1"
 command_2="python3 -u item2vec_1.py >>./item2vec_1/log/${current_date}_log.txt"
-retries=9
+retries=10
 count=0
 while true; do
     echo ${command_1} ${command_2}
@@ -78,7 +78,7 @@ echo ${command_1} ${command_2} "SUCCESS" $(date +%Y-%m-%d\ %H:%M:%S)
 
 command_1="cd /data/azx_reco/yt_recall/item2vec_7"
 command_2="python3 -u item2vec_7.py >>./item2vec_7/log/${current_date}_log.txt"
-retries=9
+retries=10
 count=0
 while true; do
     echo ${command_1} ${command_2}
@@ -97,7 +97,7 @@ echo ${command_1} ${command_2} "SUCCESS" $(date +%Y-%m-%d\ %H:%M:%S)
 
 command_1="cd /data/azx_reco/yt_recall"
 command_2="python3 -u content2redis.py >>./log/${current_date}_log.txt"
-retries=9
+retries=10
 count=0
 while true; do
     echo ${command_1} ${command_2}

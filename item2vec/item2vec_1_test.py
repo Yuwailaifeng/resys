@@ -195,10 +195,10 @@ with open("./model_data/" + str(content_hour_list[-1]) + ".id_name_dict.txt", "w
 #             unique_list = [id_name_dict[item].split("|")[2] for item in unique_list]
 #             if len(unique_list) > 1:
 #                 file.write(" ".join(unique_list) + "\n")
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
+#
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
 # content_count_dict = {}
 # for file_hour in content_hour_list[-1:]:
 #     print("./impala_data/" + str(file_hour) + ".device_uuid_content_id.txt")
@@ -226,167 +226,168 @@ with open("./model_data/" + str(content_hour_list[-1]) + ".id_name_dict.txt", "w
 # with open("./model_data/" + str(content_hour_list[-1]) + ".content_count.txt", "w", encoding="UTF-8") as file:
 #     for key, value in content_count_sort:
 #         file.write(key + "\t" + str(value) + "\t" + id_name_dict[key] + "\n")
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
+#
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
 # os.system("ls -la ./impala_data")
 # os.system("time ./item2vec -train ./sample_data/" + str(content_hour_list[-1]) + ".device_uuid_content_id_sequence_for_rec.txt -output ./model_data/" + str(content_hour_list[-1]) + ".vectors.cbow.txt -cbow 1 -size 100 -window 8 -negative 25 -hs 0 -sample 1e-4 -threads 10 -binary 0 -iter 30")
 # os.system("ls -la ./sample_data")
 # os.system("time ./item2vec -train ./sample_data/" + str(content_hour_list[-1]) + ".device_uuid_content_id_sequence_for_rec_name.txt -output ./model_data/" + str(content_hour_list[-1]) + ".vectors.cbow.binary -cbow 1 -size 100 -window 8 -negative 25 -hs 0 -sample 1e-4 -threads 10 -binary 1 -iter 30")
 # os.system("ls -la ./model_data")
-
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-def matrix_cosine(matrix1, matrix2):
-    return cosine_similarity(matrix1, matrix2)
-
-
-def i2i_idx_name(similarity_score_list, key_list, id_name_dict, process_idx, start_idx, batch_size):
-    # top_k = min(3000, len(similarity_score_list))
-    top_k = len(similarity_score_list)
-    # print("len(similarity_score_list)", len(similarity_score_list))
-    start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(process_idx, "i2i_idx_name start", start_time, start_idx, start_idx + batch_size)
-    res_idx_list = []
-    res_name_list = []
-    res_idx_channel = []
-    res_name_channel = []
-    for query_idx in range(start_idx, start_idx + batch_size):
-        if query_idx >= len(similarity_score_list):
-            break
-        similarity_idx = list(map(similarity_score_list[query_idx].index, heapq.nlargest(top_k, similarity_score_list[query_idx])))
-        # similarity_value = heapq.nlargest(top_k, similarity_score_list[query_idx])
-        res_idx = [key_list[idx] + "|" + id_name_dict[key_list[idx]].split("|")[-1] for idx in similarity_idx]
-        res_name = [key_list[idx] + "|" + id_name_dict[key_list[idx]] for idx in similarity_idx]
-        res_idx_list.append(key_list[query_idx] + "|" + id_name_dict[key_list[query_idx]].split("|")[-1] + "\t" + ";".join(res_idx[1:]))
-        res_name_list.append(key_list[query_idx] + "|" + id_name_dict[key_list[query_idx]] + "\t" + " ; ".join(res_name[1:]))
-
-        tmp_idx_dict = {}
-        tmp_name_dict = {}
-        for page_name, channel_id in zip(
-                id_name_dict[key_list[query_idx]].split("|")[0].split("#"),
-                id_name_dict[key_list[query_idx]].split("|")[-1].split("#"),
-        ):
-            tmp_key = key_list[query_idx] + "|" + channel_id + "|" + page_name
-            tmp_idx_dict.setdefault(tmp_key, [])
-            tmp_name_dict.setdefault(tmp_key, [])
-            for idx in similarity_idx:
-                for tmp_channel_id in id_name_dict[key_list[idx]].split("|")[-1].split("#"):
-                    if channel_id == tmp_channel_id:
-                        tmp_idx_dict[tmp_key].append(key_list[idx] + "|" + id_name_dict[key_list[idx]].split("|")[-1])
-                        tmp_name_dict[tmp_key].append(key_list[idx] + "|" + id_name_dict[key_list[idx]])
-        for k, v in tmp_idx_dict.items():
-            res_idx_channel.append(k + "\t" + ";".join(v[0:]))
-        for k, v in tmp_name_dict.items():
-            res_name_channel.append(k + "\t" + " ; ".join(v[0:]))
-
-    done_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(process_idx, "i2i_idx_name done", done_time, start_idx, start_idx + batch_size)
-    return res_idx_list, res_name_list, res_idx_channel, res_name_channel
-
-
-key_list = []
-vector_list = []
-with open("./model_data/" + str(content_hour_list[-1]) + ".vectors.cbow.txt", encoding="UTF-8") as file:
-    for line in file.readlines():
-        try:
-            line = line.strip().split(" ")
-            if len(line) < 3 or line[0] == "</s>":
-                continue
-            key_list.append(line[0])
-            vector_list.append(np.array([float(value) for value in line[1:]], dtype=np.float32))
-        except:
-            print(line)
-
-# print(key_list[:100])
-print(len(key_list))
-print(len(vector_list))
-print(len(vector_list[1]))
-
-for i in range(len(vector_list)):
-    if len(vector_list[i]) != 100:
-        print(i, key_list[i], len(vector_list[i]))
-
-vector_array = np.array(vector_list, dtype=np.float32)
-print("vector_array.shape", vector_array.shape)
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-similarity_v1 = matrix_cosine(vector_array, vector_array)
-print("similarity_v1.shape", similarity_v1.shape)
-
-similarity_score_list = similarity_v1.tolist()
-print("len(similarity_score_list)", len(similarity_score_list))
-
-pool = Pool(pool_num)
-batch_size = 700
-process_num = math.ceil(len(similarity_score_list) / batch_size)
-print("process_num", process_num, len(similarity_score_list), batch_size)
-results = []
-for process_idx in range(process_num):
-    # batch_size = math.ceil(len(user_his_seq_list) / 100)
-    start_idx = process_idx * batch_size
-    async_results = pool.apply_async(i2i_idx_name, args=(
-        similarity_score_list,
-        key_list,
-        id_name_dict,
-        process_idx,
-        start_idx,
-        batch_size,
-    ))
-    results.append(async_results)
-# p.map(long_time_task, [i for i in range(5)])
-print('Waiting for all subprocesses done...')
-pool.close()
-pool.join()
-
-# output_0 = [item.get()[0] for item in results]
-# print(output_0)
-
-res_idx_list = []
-res_name_list = []
-res_idx_channel = []
-res_name_channel = []
-for item in results:
-    res_idx_list.extend(item.get()[0])
-    res_name_list.extend(item.get()[1])
-    res_idx_channel.extend(item.get()[2])
-    res_name_channel.extend(item.get()[3])
-# for i in range(10):
-#     print(i, res_idx_list[i])
-# print(len(res_idx_list))
-
-# output_1 = [item.get()[1] for item in results]
-# print(output_1)
-
-# print(len(output_0))
-# print(len(output_1))
-
-
-with open("./model_data/" + str(content_hour_list[-1]) + ".vectors_similarity.txt", "w", encoding="UTF-8") as file:
-    for line in res_idx_list:
-        file.write(line + "\n")
-
-with open("./model_data/" + str(content_hour_list[-1]) + ".vectors_similarity_name.txt", "w", encoding="UTF-8") as file:
-    for line in res_name_list:
-        file.write(line + "\n")
-
-with open("./model_data/" + str(content_hour_list[-1]) + ".vectors_similarity_channel.txt", "w", encoding="UTF-8") as file:
-    for line in res_idx_channel:
-        file.write(line + "\n")
-
-with open("./model_data/" + str(content_hour_list[-1]) + ".vectors_similarity_name_channel.txt", "w", encoding="UTF-8") as file:
-    for line in res_name_channel:
-        file.write(line + "\n")
-
-print("len(res_idx_list)", len(res_idx_list))
-print("len(res_name_list)", len(res_name_list))
-print("len(res_idx_channel)", len(res_idx_channel))
-print("len(res_name_channel)", len(res_name_channel))
+#
+#
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
+# def matrix_cosine(matrix1, matrix2):
+#     return cosine_similarity(matrix1, matrix2)
+#
+#
+# def i2i_idx_name(similarity_score_list, key_list, id_name_dict, process_idx, start_idx, batch_size):
+#     # top_k = min(3000, len(similarity_score_list))
+#     top_k = len(similarity_score_list)
+#     # print("len(similarity_score_list)", len(similarity_score_list))
+#     start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+#     print(process_idx, "i2i_idx_name start", start_time, start_idx, start_idx + batch_size)
+#     res_idx_list = []
+#     res_name_list = []
+#     res_idx_channel = []
+#     res_name_channel = []
+#     for query_idx in range(start_idx, start_idx + batch_size):
+#         if query_idx >= len(similarity_score_list):
+#             break
+#         similarity_idx = list(map(similarity_score_list[query_idx].index, heapq.nlargest(top_k, similarity_score_list[query_idx])))
+#         # similarity_value = heapq.nlargest(top_k, similarity_score_list[query_idx])
+#         res_idx = [key_list[idx] + "|" + id_name_dict[key_list[idx]].split("|")[-1] for idx in similarity_idx]
+#         res_name = [key_list[idx] + "|" + id_name_dict[key_list[idx]] for idx in similarity_idx]
+#         res_idx_list.append(key_list[query_idx] + "|" + id_name_dict[key_list[query_idx]].split("|")[-1] + "\t" + ";".join(res_idx[1:]))
+#         res_name_list.append(key_list[query_idx] + "|" + id_name_dict[key_list[query_idx]] + "\t" + " ; ".join(res_name[1:]))
+#
+#         tmp_idx_dict = {}
+#         tmp_name_dict = {}
+#         for page_name, channel_id in zip(
+#                 id_name_dict[key_list[query_idx]].split("|")[0].split("#"),
+#                 id_name_dict[key_list[query_idx]].split("|")[-1].split("#"),
+#         ):
+#             tmp_key = key_list[query_idx] + "_" + channel_id + "|" + page_name
+#             tmp_idx_dict.setdefault(tmp_key, [])
+#             tmp_name_dict.setdefault(tmp_key, [])
+#             for idx in similarity_idx:
+#                 for tmp_channel_id in id_name_dict[key_list[idx]].split("|")[-1].split("#"):
+#                     if channel_id == tmp_channel_id:
+#                         tmp_idx_dict[tmp_key].append(key_list[idx])
+#                         tmp_name_dict[tmp_key].append(key_list[idx] + "|" + id_name_dict[key_list[idx]])
+#         for k, v in tmp_idx_dict.items():
+#             res_idx_channel.append(k + "\t" + ";".join(v[1:1001]))
+#         for k, v in tmp_name_dict.items():
+#             key = k.split("_")[0] + "|" + id_name_dict[k.split("_")[0]].split("|")[1] + "|" + k.split("_")[1]
+#             res_name_channel.append(key + "\t" + " ; ".join(v[1:101]))
+#
+#     done_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+#     print(process_idx, "i2i_idx_name done", done_time, start_idx, start_idx + batch_size)
+#     return res_idx_list, res_name_list, res_idx_channel, res_name_channel
+#
+#
+# key_list = []
+# vector_list = []
+# with open("./model_data/" + str(content_hour_list[-1]) + ".vectors.cbow.txt", encoding="UTF-8") as file:
+#     for line in file.readlines():
+#         try:
+#             line = line.strip().split(" ")
+#             if len(line) < 3 or line[0] == "</s>":
+#                 continue
+#             key_list.append(line[0])
+#             vector_list.append(np.array([float(value) for value in line[1:]], dtype=np.float32))
+#         except:
+#             print(line)
+#
+# # print(key_list[:100])
+# print(len(key_list))
+# print(len(vector_list))
+# print(len(vector_list[1]))
+#
+# for i in range(len(vector_list)):
+#     if len(vector_list[i]) != 100:
+#         print(i, key_list[i], len(vector_list[i]))
+#
+# vector_array = np.array(vector_list, dtype=np.float32)
+# print("vector_array.shape", vector_array.shape)
+#
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
+# similarity_v1 = matrix_cosine(vector_array, vector_array)
+# print("similarity_v1.shape", similarity_v1.shape)
+#
+# similarity_score_list = similarity_v1.tolist()
+# print("len(similarity_score_list)", len(similarity_score_list))
+#
+# pool = Pool(pool_num)
+# batch_size = 700
+# process_num = math.ceil(len(similarity_score_list) / batch_size)
+# print("process_num", process_num, len(similarity_score_list), batch_size)
+# results = []
+# for process_idx in range(process_num):
+#     # batch_size = math.ceil(len(user_his_seq_list) / 100)
+#     start_idx = process_idx * batch_size
+#     async_results = pool.apply_async(i2i_idx_name, args=(
+#         similarity_score_list,
+#         key_list,
+#         id_name_dict,
+#         process_idx,
+#         start_idx,
+#         batch_size,
+#     ))
+#     results.append(async_results)
+# # p.map(long_time_task, [i for i in range(5)])
+# print('Waiting for all subprocesses done...')
+# pool.close()
+# pool.join()
+#
+# # output_0 = [item.get()[0] for item in results]
+# # print(output_0)
+#
+# res_idx_list = []
+# res_name_list = []
+# res_idx_channel = []
+# res_name_channel = []
+# for item in results:
+#     res_idx_list.extend(item.get()[0])
+#     res_name_list.extend(item.get()[1])
+#     res_idx_channel.extend(item.get()[2])
+#     res_name_channel.extend(item.get()[3])
+# # for i in range(10):
+# #     print(i, res_idx_list[i])
+# # print(len(res_idx_list))
+#
+# # output_1 = [item.get()[1] for item in results]
+# # print(output_1)
+#
+# # print(len(output_0))
+# # print(len(output_1))
+#
+#
+# with open("./model_data/" + str(content_hour_list[-1]) + ".vectors_similarity.txt", "w", encoding="UTF-8") as file:
+#     for line in res_idx_list:
+#         file.write(line + "\n")
+#
+# with open("./model_data/" + str(content_hour_list[-1]) + ".vectors_similarity_name.txt", "w", encoding="UTF-8") as file:
+#     for line in res_name_list:
+#         file.write(line + "\n")
+#
+# with open("./model_data/" + str(content_hour_list[-1]) + ".vectors_similarity_channel.txt", "w", encoding="UTF-8") as file:
+#     for line in res_idx_channel:
+#         file.write(line + "\n")
+#
+# with open("./model_data/" + str(content_hour_list[-1]) + ".vectors_similarity_name_channel.txt", "w", encoding="UTF-8") as file:
+#     for line in res_name_channel:
+#         file.write(line + "\n")
+#
+# print("len(res_idx_list)", len(res_idx_list))
+# print("len(res_name_list)", len(res_name_list))
+# print("len(res_idx_channel)", len(res_idx_channel))
+# print("len(res_name_channel)", len(res_name_channel))
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -398,7 +399,7 @@ def u2i_idx_name(user_his_seq_list, content_id_similarity_dict, id_name_dict, pr
     # print("len(user_his_seq_list)", len(user_his_seq_list))
     start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(process_idx, "u2i_idx_name start", start_time, start_idx, start_idx + batch_size)
-    res_idx_dict = {}
+    res_idx_channel = {}
     res_his_dict = {}
     res_name_dict = {}
     for query_idx in range(start_idx, start_idx + batch_size):
@@ -421,16 +422,20 @@ def u2i_idx_name(user_his_seq_list, content_id_similarity_dict, id_name_dict, pr
                     tmp_item = content_id_similarity_dict[item][idx]
                     for page_name, channel_id in zip(id_name_dict[tmp_item].split("|")[0].split("#"), id_name_dict[tmp_item].split("|")[-1].split("#")):
                         dict_key = device_uuid + "_" + channel_id + "|" + page_name
-                        res_idx_dict.setdefault(dict_key, [])
+                        res_idx_channel.setdefault(dict_key, [])
                         res_name_dict.setdefault(device_uuid, [])
-                        if len(res_idx_dict[dict_key]) <= 300 and tmp_item not in res_idx_dict[dict_key]:
-                            res_idx_dict[dict_key].append(tmp_item)
+                        if len(res_idx_channel[dict_key]) <= 300 and tmp_item not in res_idx_channel[dict_key]:
+                            res_idx_channel[dict_key].append(tmp_item)
                         if len(res_name_dict[device_uuid]) <= 100 and tmp_item not in res_name_dict[device_uuid]:
                             res_name_dict[device_uuid].append(tmp_item)
 
-    with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco.txt", "w", encoding="UTF-8") as file:
-        for key, value in res_idx_dict.items():
+    with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco_channel.txt", "w", encoding="UTF-8") as file:
+        for key, value in res_idx_channel.items():
             # tmp_idx_res = [k + "|" + id_name_dict[k].split("|")[-1] for k in value]
+            file.write(key + "\t" + ";".join(value) + "\n")
+
+    with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco.txt", "w", encoding="UTF-8") as file:
+        for key, value in res_name_dict.items():
             file.write(key + "\t" + ";".join(value) + "\n")
 
     with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco_name.txt", "w", encoding="UTF-8") as file:
@@ -440,9 +445,9 @@ def u2i_idx_name(user_his_seq_list, content_id_similarity_dict, id_name_dict, pr
             file.write(key + "\n" + " ; ".join(tmp_his_res) + "\n" + " ; ".join(tmp_idx_res) + "\n\n")
 
     done_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(process_idx, "u2i_idx_name done ", done_time, start_idx, start_idx + batch_size, len(res_idx_dict), len(res_name_dict), len(res_his_dict))
+    print(process_idx, "u2i_idx_name done ", done_time, start_idx, start_idx + batch_size, len(res_idx_channel), len(res_name_dict), len(res_his_dict))
 
-    return len(res_idx_dict), len(res_name_dict)
+    return len(res_idx_channel), len(res_name_dict)
 
 
 content_id_similarity_dict = {}
@@ -491,9 +496,15 @@ for item in results:
     res_idx.append(item.get()[0])
     res_name.append(item.get()[1])
 
+res_idx_channel = []
 res_idx_list = []
 res_name_list = []
 for process_idx in range(process_num):
+    with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco_channel.txt", encoding="UTF-8") as file:
+        for line in file.readlines():
+            res_idx_channel.append(line)
+    print(process_idx, "len(res_idx_channel)", len(res_idx_channel))
+
     with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco.txt", encoding="UTF-8") as file:
         for line in file.readlines():
             res_idx_list.append(line)
@@ -504,8 +515,12 @@ for process_idx in range(process_num):
             res_name_list.append(line)
     print(process_idx, "len(res_name_list)", len(res_name_list))
 
-print("len(res_idx_list)", len(res_idx_list))
+print("len(res_idx_channel)", len(res_idx_channel))
 print("len(res_name_list)", len(res_name_list))
+
+with open("./model_data/" + str(content_hour_list[-1]) + ".user_content_reco_channel.txt", "w", encoding="UTF-8") as file:
+    for line in res_idx_channel:
+        file.write(line)
 
 with open("./model_data/" + str(content_hour_list[-1]) + ".user_content_reco.txt", "w", encoding="UTF-8") as file:
     for line in res_idx_list:
@@ -517,6 +532,7 @@ with open("./model_data/" + str(content_hour_list[-1]) + ".user_content_reco_nam
 
 print("res_idx", res_idx)
 print("res_name", res_name)
+print("len(res_idx_channel)", len(res_idx_channel))
 print("len(res_idx_list)", len(res_idx_list))
 print("len(res_name_list)", len(res_name_list))
 
@@ -524,10 +540,10 @@ print("len(res_name_list)", len(res_name_list))
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
 # os.system("head -n 1000 " + "./model_data/" + str(content_hour_list[-1]) + ".user_content_reco_name.txt" + " > ./model_data/user_content_reco_name.txt")
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
+#
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
 # # # zip -r item2vec.zip item2vec -x "*.txt"
 # #
 # # 01  09 * * * source /etc/profile && pyenv global 3.7.9 && source ~/.bashrc && cd /data/azx_reco/yt_recall/item2vec_1 && /home/ubuntu/.pyenv/versions/3.7.9/bin/python3 -u ./item2vec_1.py 1>>./log.txt 2>&1
