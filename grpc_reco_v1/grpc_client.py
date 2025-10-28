@@ -18,7 +18,8 @@ def run():
         stub = RecoServiceStub(channel)
         print("grpc server send...", "10.129.23.11:4245")
 
-        reco_request = RecoRequest(device_uuid="0b7223a8-38d0-450f-8ce4-185e0b1ec9eb", channel_id="1623515436593418240", request_num=30)
+        # reco_request = RecoRequest(device_uuid="0b7223a8-38d0-450f-8ce4-185e0b1ec9eb", channel_id="1623515436593418240", request_num=30)
+        reco_request = RecoRequest(device_uuid="82377867-D0AE-46DB-8A41-B05A11EBABAC", channel_id="1623515436593418240", request_num=30)
         # print("type(reco_request.device_uuid):", type(reco_request.device_uuid))
         # print("type(reco_request.channel_id):", type(reco_request.channel_id))
         # print("type(reco_request.request_num):", type(reco_request.request_num))

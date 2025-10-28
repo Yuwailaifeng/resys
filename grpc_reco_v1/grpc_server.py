@@ -83,8 +83,6 @@ class Reco(RecoServiceServicer):
             pipeline = client.pipeline()
             pipeline.mget(redis_key_list)
             result = pipeline.execute()
-            print(log_key, "Result: ", "reco_from_redis: ", len(result[0]))
-            print("result[0]", result[0][0])
             album_i2i_trigger = result[0][0].decode("utf-8").split(";") if result[0][0] else []
             album_user_count = result[0][1].decode("utf-8").split(";") if result[0][1] else []
             album_all_content = result[0][2].decode("utf-8").split(";") if result[0][2] else []
@@ -112,7 +110,6 @@ class Reco(RecoServiceServicer):
                 print(log_key, "len(album_i2i_trigger): ", len(album_i2i_trigger))
                 print(log_key, "len(album_i2i_key_list): ", len(album_i2i_key_list))
                 print(log_key, "len(album_i2i_reco_list): ", len(album_i2i_reco_list))
-                print(log_key, "len(album_i2i_reco_list[0]): ", len(album_i2i_reco_list[0]))
                 print("album_i2i_trigger", album_i2i_trigger)
                 print("album_i2i_key_list", album_i2i_key_list)
                 for i in range(len(album_i2i_trigger)):
@@ -142,36 +139,80 @@ class Reco(RecoServiceServicer):
         if len(album_i2i_reco_list) > 0:
             for idx in range(10):
                 for contend_id_list in album_i2i_reco_list:
-                    if len(contend_id_list) > idx:
+                    if len(contend_id_list) > idx and contend_id_list[idx] not in content_reco_result and contend_id_list[idx] not in album_i2i_trigger:
                         content_reco_result.append(contend_id_list[idx] + "|" + str(content_type_id_dict["album"]) + "|i2i")
         print("album_i2i_reco_list ", "len(content_reco_result)", len(content_reco_result))
 
-        if len(album_user_count) > 0:
-            for idx in range(10):
-                content_reco_result.append(album_user_count[idx] + "|" + str(content_type_id_dict["album"]) + "|user_count")
+        num = len(content_reco_result)
+        for contend_id in album_user_count:
+            if len(content_reco_result) - num >= 10:
+                break
+            if contend_id not in content_reco_result and contend_id_list not in album_i2i_trigger:
+                content_reco_result.append(contend_id + "|" + str(content_type_id_dict["album"]) + "|user_count")
         print("album_user_count ", "len(content_reco_result)", len(content_reco_result))
 
-        if len(album_all_content) > 0:
-            for idx in range(10):
-                content_reco_result.append(album_all_content[idx] + "|" + str(content_type_id_dict["album"]) + "|all_content")
+        num = len(content_reco_result)
+        for contend_id in album_all_content:
+            if len(content_reco_result) - num >= 10:
+                break
+            if contend_id not in content_reco_result and contend_id_list not in album_i2i_trigger:
+                content_reco_result.append(contend_id + "|" + str(content_type_id_dict["album"]) + "|all_content")
         print("album_all_content ", "len(content_reco_result)", len(content_reco_result))
 
         if len(single_i2i_reco_list) > 0:
             for idx in range(10):
                 for contend_id_list in single_i2i_reco_list:
-                    if len(contend_id_list) > idx:
+                    if len(contend_id_list) > idx and contend_id_list not in content_reco_result and contend_id_list not in single_i2i_trigger:
                         content_reco_result.append(contend_id_list[idx] + "|" + str(content_type_id_dict["single"]) + "|i2i")
         print("single_i2i_reco_list ", "len(content_reco_result)", len(content_reco_result))
 
-        if len(single_user_count) > 0:
-            for idx in range(10):
-                content_reco_result.append(single_user_count[idx] + "|" + str(content_type_id_dict["single"]) + "|user_count")
+        num = len(content_reco_result)
+        for contend_id in single_user_count:
+            if len(content_reco_result) - num >= 10:
+                break
+            if contend_id not in content_reco_result and contend_id_list not in single_i2i_trigger:
+                content_reco_result.append(contend_id + "|" + str(content_type_id_dict["single"]) + "|user_count")
         print("single_user_count ", "len(content_reco_result)", len(content_reco_result))
 
-        if len(single_all_content) > 0:
-            for idx in range(10):
-                content_reco_result.append(single_all_content[idx] + "|" + str(content_type_id_dict["single"]) + "|all_content")
+        num = len(content_reco_result)
+        for contend_id in single_all_content:
+            if len(content_reco_result) - num >= 10:
+                break
+            if contend_id not in content_reco_result and contend_id_list not in single_i2i_trigger:
+                content_reco_result.append(contend_id + "|" + str(content_type_id_dict["single"]) + "|all_content")
         print("single_all_content ", "len(content_reco_result)", len(content_reco_result))
+
+        u2i_redis_key_list = []
+        for content_type_label in recall_content_type_list:
+            tmp_key = device_uuid + "_" + channel_id + "_" + content_type_label + "_u2i"
+            u2i_redis_key_list.append(tmp_key)
+            print(log_key, tmp_key, len(u2i_redis_key_list), u2i_redis_key_list)
+
+        with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
+            pipeline = client.pipeline()
+            pipeline.mget(u2i_redis_key_list)
+            result = pipeline.execute()
+            album_u2i_reco_list = result[0][0].decode("utf-8").split(";") if result[0][0] else []
+            single_u2i_reco_list = result[0][1].decode("utf-8").split(";") if result[0][1] else []
+            print(log_key, "Result: ", "u2i_reco_from_redis: ", len(result[0]))
+            print("result[0]", result[0][0])
+            print(log_key, "len(album_u2i_reco_list): ", len(album_u2i_reco_list))
+            print(log_key, "len(single_u2i_reco_list): ", len(single_u2i_reco_list))
+        print()
+
+        num = len(content_reco_result)
+        for contend_id in album_u2i_reco_list:
+            if len(content_reco_result) - num >= 10:
+                break
+            content_reco_result.append(contend_id + "|" + str(content_type_id_dict["album"]) + "|u2i")
+        print("album_u2i_reco_list ", "len(album_u2i_reco_list)", len(album_u2i_reco_list))
+
+        num = len(content_reco_result)
+        for contend_id in single_u2i_reco_list:
+            if len(content_reco_result) - num >= 10:
+                break
+            content_reco_result.append(contend_id + "|" + str(content_type_id_dict["single"]) + "|u2i")
+        print("single_u2i_reco_list ", "len(single_u2i_reco_list)", len(single_u2i_reco_list))
 
         reco_response = RecoResponse()
         content_id_list = []
