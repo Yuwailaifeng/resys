@@ -278,9 +278,9 @@ class Reco(RecoServiceServicer):
 def serve():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     add_RecoServiceServicer_to_server(Reco(), server)
-    server.add_insecure_port("[::]:4245")
+    server.add_insecure_port("[::]:4244")
     server.start()
-    print("grpc server start...", "[::]:4245")
+    print("grpc server start...", "[::]:4244")
     server.wait_for_termination()
 
 
