@@ -405,9 +405,9 @@ def u2i_idx_name(user_his_seq_list, content_id_similarity_dict, id_name_dict, pr
                         dict_key = device_uuid + "_" + channel_id + "|" + page_name
                         res_idx_dict.setdefault(dict_key, [])
                         res_name_dict.setdefault(device_uuid, [])
-                        if len(res_idx_dict[dict_key]) <= 100 and tmp_item not in res_idx_dict[dict_key]:
+                        if len(res_idx_dict[dict_key]) < 100 and tmp_item not in res_idx_dict[dict_key]:
                             res_idx_dict[dict_key].append(tmp_item)
-                        if len(res_name_dict[device_uuid]) <= 100 and tmp_item not in res_name_dict[device_uuid]:
+                        if len(res_name_dict[device_uuid]) < 100 and tmp_item not in res_name_dict[device_uuid]:
                             res_name_dict[device_uuid].append(tmp_item)
 
     with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco_channel.txt", "w", encoding="UTF-8") as file:

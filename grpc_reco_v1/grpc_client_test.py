@@ -14,7 +14,7 @@ from content_pb2_grpc import RecoServiceStub
 
 def run(idx, device_uuid, channel_id):
     start = time.time()
-    with grpc.insecure_channel("10.129.23.11:4244") as channel:
+    with grpc.insecure_channel("10.129.23.11:4246") as channel:
         stub = RecoServiceStub(channel)
         print("grpc server send...", "10.129.23.11:4244")
 
