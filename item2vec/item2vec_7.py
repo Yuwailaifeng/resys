@@ -349,19 +349,19 @@ for item in results:
 # print(len(output_1))
 
 
-with open("./model_data/" + str(content_hour_list[-1]) + ".vectors_similarity.txt", "w", encoding="UTF-8") as file:
+with open("./model_data/" + str(content_hour_list[-1]) + ".content_similarity.txt", "w", encoding="UTF-8") as file:
     for line in res_idx_list:
         file.write(line + "\n")
 
-with open("./model_data/" + str(content_hour_list[-1]) + ".vectors_similarity_name.txt", "w", encoding="UTF-8") as file:
+with open("./model_data/" + str(content_hour_list[-1]) + ".content_similarity_name.txt", "w", encoding="UTF-8") as file:
     for line in res_name_list:
         file.write(line + "\n")
 
-with open("./model_data/" + str(content_hour_list[-1]) + ".vectors_similarity_channel.txt", "w", encoding="UTF-8") as file:
+with open("./model_data/" + str(content_hour_list[-1]) + ".content_similarity_channel.txt", "w", encoding="UTF-8") as file:
     for line in res_idx_channel:
         file.write(line + "\n")
 
-with open("./model_data/" + str(content_hour_list[-1]) + ".vectors_similarity_name_channel.txt", "w", encoding="UTF-8") as file:
+with open("./model_data/" + str(content_hour_list[-1]) + ".content_similarity_name_channel.txt", "w", encoding="UTF-8") as file:
     for line in res_name_channel:
         file.write(line + "\n")
 
@@ -432,7 +432,7 @@ def u2i_idx_name(user_his_seq_list, content_id_similarity_dict, id_name_dict, pr
 
 
 content_id_similarity_dict = {}
-with open("./model_data/" + str(content_hour_list[-1]) + ".vectors_similarity.txt", encoding="UTF-8") as file:
+with open("./model_data/" + str(content_hour_list[-1]) + ".content_similarity.txt", encoding="UTF-8") as file:
     for line in file.readlines():
         line = line.strip().split("\t")
         content_id_similarity_dict[line[0].split("|")[0]] = [item.split("|")[0] for item in line[1].split(";")]
@@ -553,12 +553,14 @@ print("rm -rf ./tmp_data/*")
 os.system("rm -rf ./tmp_data/*")
 
 pre_day = (datetime.datetime.now() + datetime.timedelta(days=-5)).date().strftime("%Y%m%d")
-print("rm -rf ./model_data/" + str(pre_day) + ".vectors_similarity.txt")
-os.system("rm -rf ./model_data/" + str(pre_day) + ".vectors_similarity.txt")
-print("rm -rf ./model_data/" + str(pre_day) + ".vectors_similarity_name.txt")
-os.system("rm -rf ./model_data/" + str(pre_day) + ".vectors_similarity_name.txt")
+print("rm -rf ./model_data/" + str(pre_day) + ".content_similarity.txt")
+os.system("rm -rf ./model_data/" + str(pre_day) + ".content_similarity.txt")
+print("rm -rf ./model_data/" + str(pre_day) + ".content_similarity_name.txt")
+os.system("rm -rf ./model_data/" + str(pre_day) + ".content_similarity_name.txt")
 print("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco_channel.txt")
 os.system("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco_channel.txt")
+print("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco.txt")
+os.system("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco.txt")
 print("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco_name.txt")
 os.system("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco_name.txt")
 

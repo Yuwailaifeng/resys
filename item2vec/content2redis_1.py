@@ -48,8 +48,8 @@ user_trigger_file_list = [
 ]
 
 i2i_recall_file_list = [
-    "item2vec_1/model_data/" + str(file_hour) + ".vectors_similarity.txt",
-    "item2vec_7/model_data/" + str(file_hour) + ".vectors_similarity.txt",
+    "item2vec_1/model_data/" + str(file_hour) + ".content_similarity.txt",
+    "item2vec_7/model_data/" + str(file_hour) + ".content_similarity.txt",
 ]
 
 u2i_recall_file_list = [
