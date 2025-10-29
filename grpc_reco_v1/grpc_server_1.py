@@ -75,9 +75,10 @@ class Reco(RecoServiceServicer):
                 if recall_reason_label == "i2i_trigger":
                     tmp_key = device_uuid + "_" + content_type_label + "_" + recall_reason_label
                 else:
-                    tmp_key = channel_id + "_" + content_type_label + "_" + recall_reason_label
+                    tmp_key = content_type_label + "_" + recall_reason_label
                 redis_key_list.append(tmp_key)
-                print(log_key, tmp_key, len(redis_key_list))
+                print(log_key, len(redis_key_list), "redis_key", tmp_key)
+        print()
 
         with redis.Redis(host="10.129.23.11", port=6379, db=1) as client:
             pipeline = client.pipeline()
@@ -90,17 +91,17 @@ class Reco(RecoServiceServicer):
             single_user_count = result[0][4].decode("utf-8").split(";") if result[0][4] else []
             single_all_content = result[0][5].decode("utf-8").split(";") if result[0][5] else []
             print(log_key, "Result: ", "reco_from_redis: ", len(result[0]))
-            print(log_key, "len(album_i2i_trigger): ", len(album_i2i_trigger))
-            print(log_key, "len(album_user_count): ", len(album_user_count))
-            print(log_key, "len(album_all_content): ", len(album_all_content))
-            print(log_key, "len(single_i2i_trigger): ", len(single_i2i_trigger))
-            print(log_key, "len(single_user_count): ", len(single_user_count))
-            print(log_key, "len(single_all_content): ", len(single_all_content))
+            print(log_key, "result from redis: len(album_i2i_trigger): ", len(album_i2i_trigger))
+            print(log_key, "result from redis: len(album_user_count): ", len(album_user_count))
+            print(log_key, "result from redis: len(album_all_content): ", len(album_all_content))
+            print(log_key, "result from redis: len(single_i2i_trigger): ", len(single_i2i_trigger))
+            print(log_key, "result from redis: len(single_user_count): ", len(single_user_count))
+            print(log_key, "result from redis: len(single_all_content): ", len(single_all_content))
         print()
 
         album_i2i_reco_list = []
         if len(album_i2i_trigger) > 0:
-            album_i2i_key_list = [item + "_" + channel_id + "_album_i2i" for item in album_i2i_trigger]
+            album_i2i_key_list = [item + "_album_i2i" for item in album_i2i_trigger]
             with redis.Redis(host="10.129.23.11", port=6379, db=1) as client:
                 pipeline = client.pipeline()
                 pipeline.mget(album_i2i_key_list)
@@ -110,15 +111,15 @@ class Reco(RecoServiceServicer):
                 print(log_key, "len(album_i2i_trigger): ", len(album_i2i_trigger))
                 print(log_key, "len(album_i2i_key_list): ", len(album_i2i_key_list))
                 print(log_key, "len(album_i2i_reco_list): ", len(album_i2i_reco_list))
-                print("album_i2i_trigger", album_i2i_trigger)
-                print("album_i2i_key_list", album_i2i_key_list)
+                # print("album_i2i_trigger", album_i2i_trigger)
+                # print("album_i2i_key_list", album_i2i_key_list)
                 for i in range(len(album_i2i_trigger)):
-                    print(i, "album_i2i_key_list", album_i2i_trigger[i], album_i2i_reco_list[i][:10])
+                    print(i, "album_i2i_trigger", album_i2i_key_list[i], album_i2i_reco_list[i][:10])
         print()
 
         single_i2i_reco_list = []
         if len(single_i2i_trigger) > 0:
-            single_i2i_key_list = [item + "_" + channel_id + "_single_i2i" for item in single_i2i_trigger]
+            single_i2i_key_list = [item + "_single_i2i" for item in single_i2i_trigger]
             with redis.Redis(host="10.129.23.11", port=6379, db=1) as client:
                 pipeline = client.pipeline()
                 pipeline.mget(single_i2i_key_list)
@@ -129,10 +130,10 @@ class Reco(RecoServiceServicer):
                 print(log_key, "len(single_i2i_key_list): ", len(single_i2i_key_list))
                 print(log_key, "len(single_i2i_reco_list): ", len(single_i2i_reco_list))
                 print(log_key, "len(single_i2i_reco_list[0]): ", len(single_i2i_reco_list[0]))
-                print("single_i2i_trigger", single_i2i_trigger)
-                print("single_i2i_key_list", single_i2i_key_list)
+                # print("single_i2i_trigger", single_i2i_trigger)
+                # print("single_i2i_key_list", single_i2i_key_list)
                 for i in range(len(single_i2i_trigger)):
-                    print(i, "single_i2i_reco_list", single_i2i_trigger[i], single_i2i_reco_list[i][:10])
+                    print(i, "single_i2i_trigger", single_i2i_key_list[i], single_i2i_reco_list[i][:10])
             print()
 
         content_reco_result = []
@@ -147,7 +148,7 @@ class Reco(RecoServiceServicer):
                         content_reco_result.append(contend_id_list[idx] + "|" + str(content_type_id_dict["album"]) + "|i2i")
                         content_reco_set.add(contend_id_list[idx])
         album_i2i_reco_num = len(content_reco_result) - num
-        print("album_i2i_reco_list ", album_i2i_reco_num, "len(content_reco_result)", len(content_reco_result))
+        print("len(content_reco_result)", len(content_reco_result), "album_i2i_reco_num", album_i2i_reco_num)
 
         num = len(content_reco_result)
         tmp_list = album_user_count[:10]
@@ -161,7 +162,7 @@ class Reco(RecoServiceServicer):
                 content_reco_result.append(contend_id + "|" + str(content_type_id_dict["album"]) + "|user_count")
                 content_reco_set.add(contend_id)
         album_user_count_reco_num = len(content_reco_result) - num
-        print("album_user_count ", album_user_count_reco_num, "len(content_reco_result)", len(content_reco_result))
+        print("len(content_reco_result)", len(content_reco_result), "album_user_count_reco_num", album_user_count_reco_num)
 
         num = len(content_reco_result)
         random.shuffle(album_all_content)
@@ -172,7 +173,7 @@ class Reco(RecoServiceServicer):
                 content_reco_result.append(contend_id + "|" + str(content_type_id_dict["album"]) + "|all_content")
                 content_reco_set.add(contend_id)
         album_all_content_reco_num = len(content_reco_result) - num
-        print("album_all_content ", album_all_content_reco_num, "len(content_reco_result)", len(content_reco_result))
+        print("len(content_reco_result)", len(content_reco_result), "album_all_content_reco_num", album_all_content_reco_num)
 
         num = len(content_reco_result)
         if len(single_i2i_reco_list) > 0:
@@ -184,7 +185,7 @@ class Reco(RecoServiceServicer):
                         content_reco_result.append(contend_id_list[idx] + "|" + str(content_type_id_dict["single"]) + "|i2i")
                         content_reco_set.add(contend_id_list[idx])
         single_i2i_reco_num = len(content_reco_result) - num
-        print("single_i2i_reco_list ", single_i2i_reco_num, "len(content_reco_result)", len(content_reco_result))
+        print("len(content_reco_result)", len(content_reco_result), "single_i2i_reco_num", single_i2i_reco_num)
 
         num = len(content_reco_result)
         tmp_list = single_user_count[:10]
@@ -198,7 +199,7 @@ class Reco(RecoServiceServicer):
                 content_reco_result.append(contend_id + "|" + str(content_type_id_dict["single"]) + "|user_count")
                 content_reco_set.add(contend_id)
         single_user_count_reco_num = len(content_reco_result) - num
-        print("single_user_count ", single_user_count_reco_num, "len(content_reco_result)", len(content_reco_result))
+        print("len(content_reco_result)", len(content_reco_result), "single_user_count_reco_num", single_user_count_reco_num)
 
         num = len(content_reco_result)
         random.shuffle(single_all_content)
@@ -209,13 +210,13 @@ class Reco(RecoServiceServicer):
                 content_reco_result.append(contend_id + "|" + str(content_type_id_dict["single"]) + "|all_content")
                 content_reco_set.add(contend_id)
         single_all_content_reco_num = len(content_reco_result) - num
-        print("single_all_content ", single_all_content_reco_num, "len(content_reco_result)", len(content_reco_result))
+        print("len(content_reco_result)", len(content_reco_result), "single_all_content_reco_num", single_all_content_reco_num)
 
         u2i_redis_key_list = []
         for content_type_label in recall_content_type_list:
-            tmp_key = device_uuid + "_" + channel_id + "_" + content_type_label + "_u2i"
+            tmp_key = device_uuid + "_" + content_type_label + "_u2i"
             u2i_redis_key_list.append(tmp_key)
-            print(log_key, tmp_key, len(u2i_redis_key_list), u2i_redis_key_list)
+            print(log_key, "u2i_redis_key", tmp_key)
 
         with redis.Redis(host="10.129.23.11", port=6379, db=1) as client:
             pipeline = client.pipeline()
@@ -224,7 +225,7 @@ class Reco(RecoServiceServicer):
             album_u2i_reco_list = result[0][0].decode("utf-8").split(";") if result[0][0] else []
             single_u2i_reco_list = result[0][1].decode("utf-8").split(";") if result[0][1] else []
             print(log_key, "Result: ", "u2i_reco_from_redis: ", len(result[0]))
-            print("result[0]", result[0][0])
+            # print("result[0]", result[0])
             print(log_key, "len(album_u2i_reco_list): ", len(album_u2i_reco_list))
             print(log_key, "len(single_u2i_reco_list): ", len(single_u2i_reco_list))
         print()
@@ -234,14 +235,16 @@ class Reco(RecoServiceServicer):
             if len(content_reco_result) - num >= 10:
                 break
             content_reco_result.append(contend_id + "|" + str(content_type_id_dict["album"]) + "|u2i")
-        print("album_u2i_reco_list ", "len(album_u2i_reco_list)", len(album_u2i_reco_list))
+        album_u2i_reco_num = len(content_reco_result) - num
+        print("len(content_reco_result)", len(content_reco_result), "album_u2i_reco_num", album_u2i_reco_num)
 
         num = len(content_reco_result)
         for contend_id in single_u2i_reco_list:
             if len(content_reco_result) - num >= 10:
                 break
             content_reco_result.append(contend_id + "|" + str(content_type_id_dict["single"]) + "|u2i")
-        print("single_u2i_reco_list ", "len(single_u2i_reco_list)", len(single_u2i_reco_list))
+        single_u2i_reco_num = len(content_reco_result) - num
+        print("len(content_reco_result)", len(content_reco_result), "single_u2i_reco_num", single_u2i_reco_num)
 
         reco_response = RecoResponse()
         content_id_list = []
@@ -276,7 +279,7 @@ class Reco(RecoServiceServicer):
 
 
 def serve():
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=20))
     add_RecoServiceServicer_to_server(Reco(), server)
     server.add_insecure_port("[::]:4244")
     server.start()
