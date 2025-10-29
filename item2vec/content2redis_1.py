@@ -48,13 +48,13 @@ user_trigger_file_list = [
 ]
 
 i2i_recall_file_list = [
-    "item2vec_1/model_data/" + str(file_hour) + ".vectors_similarity_channel.txt",
-    "item2vec_7/model_data/" + str(file_hour) + ".vectors_similarity_channel.txt",
+    "item2vec_1/model_data/" + str(file_hour) + ".vectors_similarity.txt",
+    "item2vec_7/model_data/" + str(file_hour) + ".vectors_similarity.txt",
 ]
 
 u2i_recall_file_list = [
-    "item2vec_1/model_data/" + str(file_hour) + ".user_content_reco_channel.txt",
-    "item2vec_7/model_data/" + str(file_hour) + ".user_content_reco_channel.txt",
+    "item2vec_1/model_data/" + str(file_hour) + ".user_content_reco.txt",
+    "item2vec_7/model_data/" + str(file_hour) + ".user_content_reco.txt",
 ]
 
 for file_name in all_content_recall_file_list:
@@ -94,10 +94,8 @@ for recall_name, file_name in zip(recall_name_list, user_count_recall_file_list)
                     print(line)
                     continue
                 content_id = line[0]
-                channel_id_list = line[2].split("|")[-1].split("#")
-                for channel_id in channel_id_list:
-                    user_count_reco_dict.setdefault(channel_id + "_" + recall_name + "_user_count", [])
-                    user_count_reco_dict[channel_id + "_" + recall_name + "_user_count"].append(content_id)
+                user_count_reco_dict.setdefault(recall_name + "_user_count", [])
+                user_count_reco_dict[recall_name + "_user_count"].append(content_id)
             except:
                 print(line)
             # if count >= 100:
@@ -110,7 +108,7 @@ for key, value in user_count_reco_dict.items():
 print("len(user_count_reco_dict)", len(user_count_reco_dict))
 key_num += len(user_count_reco_dict)
 
-with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
+with redis.Redis(host="10.129.23.11", port=6379, db=1) as client:
     print("redis_version: ", client.info()["redis_version"])
     client.flushdb()
     pipeline = client.pipeline()
@@ -139,8 +137,8 @@ for recall_name, file_name in zip(recall_name_list, all_content_recall_file_list
                     print(line)
                     continue
                 content_id, channel_id = line[0], line[-1]
-                all_content_reco_dict.setdefault(channel_id + "_" + recall_name + "_all_content", [])
-                all_content_reco_dict[channel_id + "_" + recall_name + "_all_content"].append(content_id)
+                all_content_reco_dict.setdefault(recall_name + "_all_content", [])
+                all_content_reco_dict[recall_name + "_all_content"].append(content_id)
             except:
                 print(line)
             # if count >= 100:
@@ -153,7 +151,7 @@ for key, value in all_content_reco_dict.items():
 print("len(all_content_reco_dict)", len(all_content_reco_dict))
 key_num += len(all_content_reco_dict)
 
-with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
+with redis.Redis(host="10.129.23.11", port=6379, db=1) as client:
     # print("redis_version: ", client.info()["redis_version"])
     # client.flushdb()
     pipeline = client.pipeline()
@@ -189,7 +187,7 @@ with open(user_trigger_file_list[0], encoding="UTF-8") as file:
 print("len(album_i2i_trigger_dict)", len(album_i2i_trigger_dict), count)
 key_num += count
 
-with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
+with redis.Redis(host="10.129.23.11", port=6379, db=1) as client:
     # print("redis_version: ", client.info()["redis_version"])
     # client.flushdb()
     pipeline = client.pipeline()
@@ -223,7 +221,7 @@ with open(user_trigger_file_list[1], encoding="UTF-8") as file:
 print("len(single_i2i_trigger_dict)", len(single_i2i_trigger_dict), count)
 key_num += count
 
-with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
+with redis.Redis(host="10.129.23.11", port=6379, db=1) as client:
     # print("redis_version: ", client.info()["redis_version"])
     # client.flushdb()
     pipeline = client.pipeline()
@@ -249,7 +247,7 @@ with open(i2i_recall_file_list[0], encoding="UTF-8") as file:
             if len(line) != 2:
                 print(line)
                 continue
-            album_i2i_dict[line[0].split("|")[0] + "_album_i2i"] = line[1]
+            album_i2i_dict[line[0].split("|")[0] + "_album_i2i"] = ";".join([item.split("|")[0] for item in line[1].split(";")[:top_k]])
             count += 1
         except:
             print(line)
@@ -257,7 +255,7 @@ with open(i2i_recall_file_list[0], encoding="UTF-8") as file:
 print("len(album_i2i_dict)", len(album_i2i_dict), count)
 key_num += count
 
-with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
+with redis.Redis(host="10.129.23.11", port=6379, db=1) as client:
     # print("redis_version: ", client.info()["redis_version"])
     # client.flushdb()
     pipeline = client.pipeline()
@@ -283,7 +281,7 @@ with open(i2i_recall_file_list[1], encoding="UTF-8") as file:
             if len(line) != 2:
                 print(line)
                 continue
-            single_i2i_dict[line[0].split("|")[0] + "_single_i2i"] = line[1]
+            single_i2i_dict[line[0].split("|")[0] + "_single_i2i"] = ";".join([item.split("|")[0] for item in line[1].split(";")[:top_k]])
             count += 1
         except:
             print(line)
@@ -291,7 +289,7 @@ with open(i2i_recall_file_list[1], encoding="UTF-8") as file:
 print("len(single_i2i_dict)", len(single_i2i_dict), count)
 key_num += count
 
-with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
+with redis.Redis(host="10.129.23.11", port=6379, db=1) as client:
     # print("redis_version: ", client.info()["redis_version"])
     # client.flushdb()
     pipeline = client.pipeline()
@@ -320,7 +318,7 @@ with open(u2i_recall_file_list[0], encoding="UTF-8") as file:
                 print(line)
                 continue
             album_u2i_dict.setdefault(count // batch_size, {})
-            album_u2i_dict[count // batch_size][line[0].split("|")[0] + "_album_u2i"] = line[1]
+            album_u2i_dict[count // batch_size][line[0] + "_album_u2i"] = line[1]
             count += 1
         except:
             print(line)
@@ -328,7 +326,7 @@ with open(u2i_recall_file_list[0], encoding="UTF-8") as file:
 print("len(album_u2i_dict)", len(album_u2i_dict), count)
 key_num += count
 
-with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
+with redis.Redis(host="10.129.23.11", port=6379, db=1) as client:
     # print("redis_version: ", client.info()["redis_version"])
     # client.flushdb()
     pipeline = client.pipeline()
@@ -357,7 +355,7 @@ with open(u2i_recall_file_list[1], encoding="UTF-8") as file:
                 print(line)
                 continue
             single_u2i_dict.setdefault(count // batch_size, {})
-            single_u2i_dict[count // batch_size][line[0].split("|")[0] + "_single_u2i"] = line[1]
+            single_u2i_dict[count // batch_size][line[0] + "_single_u2i"] = line[1]
             count += 1
         except:
             print(line)
@@ -365,7 +363,7 @@ with open(u2i_recall_file_list[1], encoding="UTF-8") as file:
 print("len(single_u2i_dict)", len(single_u2i_dict), count)
 key_num += count
 
-with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
+with redis.Redis(host="10.129.23.11", port=6379, db=1) as client:
     # print("redis_version: ", client.info()["redis_version"])
     # client.flushdb()
     pipeline = client.pipeline()

@@ -96,7 +96,7 @@ echo ${command_1} ${command_2} "SUCCESS" $(date +%Y-%m-%d\ %H:%M:%S)
 
 
 command_1="cd /data/azx_reco/yt_recall"
-command_2="python3 -u content2redis.py >>./log/${current_date}_log.txt"
+command_2="python3 -u content2redis_1.py >>./log/${current_date}_log.txt"
 retries=10
 count=0
 while true; do
@@ -114,4 +114,23 @@ done
 echo ${command_1} ${command_2} "SUCCESS" $(date +%Y-%m-%d\ %H:%M:%S)
 
 
-echo "${current_date} DONE!"
+command_1="cd /data/azx_reco/yt_recall"
+command_2="python3 -u content2redis_2.py >>./log/${current_date}_log.txt"
+retries=10
+count=0
+while true; do
+    echo ${command_1} ${command_2}
+    ${command_1} && ${command_2} && break
+    if [ $count -eq $retries ]; then
+        echo "EXIT" $(date +%Y-%m-%d\ %H:%M:%S)
+        exit
+    fi
+    echo "Retry..." $(date +%Y-%m-%d\ %H:%M:%S)
+    sleep 900
+    count=$((count+1))
+    echo ${count}
+done
+echo ${command_1} ${command_2} "SUCCESS" $(date +%Y-%m-%d\ %H:%M:%S)
+
+
+echo "${current_date} ALL DONE!"

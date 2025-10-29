@@ -31,14 +31,14 @@ print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-impala_hour = 5
+impala_hour = 101
 file_hour_list = []
 for idx in range(impala_hour):
     file_hour = (datetime.datetime.now() - datetime.timedelta(days=impala_hour - idx)).date().strftime("%Y%m%d")
     file_hour_list.append(file_hour)
 print(impala_hour, file_hour_list)
 
-content_hour = 30
+content_hour = 90
 content_hour_list = []
 for idx in range(content_hour):
     file_hour = (datetime.datetime.now() - datetime.timedelta(days=content_hour - idx)).date().strftime("%Y%m%d")
@@ -48,118 +48,117 @@ print(content_hour, content_hour_list)
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-# connection = connect(
-#     host="10.129.16.2",
-#     port=21050,
-#     # database="dw_v2",
-# )
-#
-# cursor = connection.cursor()
-# cursor.execute("SELECT VERSION()")
-# print(f"Impala版本: {cursor.fetchone()[0]}")
-#
-# sql_list = []
-# for file_hour in file_hour_list:
-#     # sql_list.append("""SELECT `device_uuid`, GROUP_CONCAT(DISTINCT CONCAT(CAST(`content_type` AS STRING), "|", CAST(`content_id_c` AS STRING)), ";") content_id_sequence FROM `dw_v2`.`user_ls_day_summary` WHERE `ds` = '""" + str(file_hour) + """' AND `content_type` = 1 AND `listen_dur_sum` > 3000 AND `device_uuid` IS NOT NULL AND `content_id_c` IS NOT NULL GROUP BY `device_uuid`""")
-#     sql_list.append("""
-#         SELECT `device_uuid`, GROUP_CONCAT(DISTINCT CONCAT(CAST(`content_type` AS STRING), "|", CAST(`content_id_c` AS STRING)), ";") content_id_sequence
-#         FROM `dw_v2`.`user_ls_day_summary`
-#         WHERE `ds` = '""" + str(file_hour) + """' AND `content_type` = 1 AND `device_uuid` IS NOT NULL AND `content_id_c` IS NOT NULL
-#         GROUP BY `device_uuid`
-#     """)
-#
-# try:
-#     with connection.cursor() as cursor:
-#         # # sql = """SELECT CONCAT(CAST(`content_type` AS STRING), "|", `content_type_name`)  content, COUNT(*) content_count FROM `dw_v2`.`user_ls_day_summary` WHERE `ds` = '20251009' GROUP BY `content` ORDER BY `content_count` DESC"""
-#         # # sql = """SELECT * FROM `dm`.`recommend_waterfall_v2_content_list` WHERE `ds` = '""" + str(file_hour_list[-1]) + """' AND `content_type` = '专辑'"""
-#         # # sql = """SELECT DISTINCT `content_id_c`, `content_name_f` FROM `dw_v2`.`user_ls_day_summary` WHERE `ds` = '20251013' AND `content_type` = 1"""
-#         # # sql = """SELECT `id`, `album_name`, `listen_count` FROM `dict`.`content_basic_2_dict_t_album` WHERE `listen_count` >= 0"""
-#         # sql = """SELECT * FROM `dict`.`content_basic_2_dict_t_album` WHERE `enable_status` = 1 AND `delete_flag` = 0"""
-#         # print(sql)
-#         #
-#         # cursor.execute(sql)
-#         # result = cursor.fetchall()
-#         # columns = [item[0] for item in cursor.description]
-#         # tempDf = pd.DataFrame(result, columns=columns)
-#         #
-#         # print("`dict`.`content_basic_2_dict_t_album`", file_hour_list[-1], len(tempDf), columns)
-#         # tempDf.to_csv("./impala_data/" + str(file_hour_list[-1]) + ".content_basic_2_dict_t_album.txt", header=columns, index=False, sep="\t", encoding="UTF-8")
-#
-#         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#
-#         sql = """
-#             SELECT t1.content_id_f, t1.page_name, t2.album_name, t1.content_type, t1.channel_id
-#             FROM dm.recommend_waterfall_v2_content_list t1
-#             LEFT JOIN dict.content_basic_2_dict_t_album_for_recs t2
-#             ON t1.content_id_f = t2.id
-#             WHERE t1.ds = '""" + str(file_hour_list[-1]) + """' AND t1.content_type = '专辑'
-#         """
-#         print(sql)
-#
-#         cursor.execute(sql)
-#         result = cursor.fetchall()
-#         columns = [item[0] for item in cursor.description]
-#         tempDf = pd.DataFrame(result, columns=columns)
-#
-#         print("content_album_for_recs", file_hour_list[-1], len(tempDf), columns)
-#         tempDf.to_csv("./model_data/" + str(file_hour_list[-1]) + ".content_album_for_recs.txt", header=columns, index=False, sep="\t", encoding="UTF-8")
-#
-#         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-#
-#         for file_hour, sql in zip(file_hour_list, sql_list):
-#             print(sql)
-#             cursor.execute(sql)
-#
-#             result = cursor.fetchall()
-#             columns = [item[0] for item in cursor.description]
-#             tempDf = pd.DataFrame(result, columns=columns)
-#
-#             # tempDf[columns[1]] = tempDf[columns[1]].replace("\t", "")
-#             # tempDf[columns[1]] = tempDf[columns[1]].replace({
-#             #     "\t": "",
-#             #     " ": "",
-#             # })
-#
-#             # print(tempDf)
-#             print("`dw_v2`.`user_ls_day_summary`", file_hour, len(tempDf), columns)
-#             tempDf.to_csv("./impala_data/" + str(file_hour) + ".device_uuid_content_id.txt", header=False, index=False, sep="\t", encoding="UTF-8")
-#
-#             # for row in result:
-#             #     print(row)
-#             # print()
-#
-# except Exception as e:
-#     print(f" Impala查询失败！原因：{str(e)}")
-#
-# finally:
-#     cursor.close()
-#     connection.close()
+connection = connect(
+    host="10.129.16.2",
+    port=21050,
+    # database="dw_v2",
+)
+
+cursor = connection.cursor()
+cursor.execute("SELECT VERSION()")
+print(f"Impala版本: {cursor.fetchone()[0]}")
+
+sql_list = []
+for file_hour in file_hour_list:
+    # sql_list.append("""SELECT `device_uuid`, GROUP_CONCAT(DISTINCT CONCAT(CAST(`content_type` AS STRING), "|", CAST(`content_id_c` AS STRING)), ";") content_id_sequence FROM `dw_v2`.`user_ls_day_summary` WHERE `ds` = '""" + str(file_hour) + """' AND `content_type` = 1 AND `listen_dur_sum` > 3000 AND `device_uuid` IS NOT NULL AND `content_id_c` IS NOT NULL GROUP BY `device_uuid`""")
+    sql_list.append("""
+        SELECT `device_uuid`, GROUP_CONCAT(DISTINCT CONCAT(CAST(`content_type` AS STRING), "|", CAST(`content_id_c` AS STRING)), ";") content_id_sequence
+        FROM `dw_v2`.`user_ls_day_summary`
+        WHERE `ds` = '""" + str(file_hour) + """' AND `content_type` = 1 AND `device_uuid` IS NOT NULL AND `content_id_c` IS NOT NULL
+        GROUP BY `device_uuid`
+    """)
+
+try:
+    with connection.cursor() as cursor:
+        # # sql = """SELECT CONCAT(CAST(`content_type` AS STRING), "|", `content_type_name`)  content, COUNT(*) content_count FROM `dw_v2`.`user_ls_day_summary` WHERE `ds` = '20251009' GROUP BY `content` ORDER BY `content_count` DESC"""
+        # # sql = """SELECT * FROM `dm`.`recommend_waterfall_v2_content_list` WHERE `ds` = '""" + str(file_hour_list[-1]) + """' AND `content_type` = '专辑'"""
+        # # sql = """SELECT DISTINCT `content_id_c`, `content_name_f` FROM `dw_v2`.`user_ls_day_summary` WHERE `ds` = '20251013' AND `content_type` = 1"""
+        # # sql = """SELECT `id`, `album_name`, `listen_count` FROM `dict`.`content_basic_2_dict_t_album` WHERE `listen_count` >= 0"""
+        # sql = """SELECT * FROM `dict`.`content_basic_2_dict_t_album` WHERE `enable_status` = 1 AND `delete_flag` = 0"""
+        # print(sql)
+        #
+        # cursor.execute(sql)
+        # result = cursor.fetchall()
+        # columns = [item[0] for item in cursor.description]
+        # tempDf = pd.DataFrame(result, columns=columns)
+        #
+        # print("`dict`.`content_basic_2_dict_t_album`", file_hour_list[-1], len(tempDf), columns)
+        # tempDf.to_csv("./impala_data/" + str(file_hour_list[-1]) + ".content_basic_2_dict_t_album.txt", header=columns, index=False, sep="\t", encoding="UTF-8")
+
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+        sql = """
+            SELECT t1.content_id_f, t1.page_name, t2.album_name, t1.content_type, t1.channel_id
+            FROM dm.recommend_waterfall_v2_content_list t1
+            LEFT JOIN dict.content_basic_2_dict_t_album_for_recs t2
+            ON t1.content_id_f = t2.id
+            WHERE t1.ds = '""" + str(file_hour_list[-1]) + """' AND t1.content_type = '专辑'
+        """
+        print(sql)
+
+        cursor.execute(sql)
+        result = cursor.fetchall()
+        columns = [item[0] for item in cursor.description]
+        tempDf = pd.DataFrame(result, columns=columns)
+
+        print("content_album_for_recs", file_hour_list[-1], tempDf.shape, columns, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        tempDf.to_csv("./model_data/" + str(file_hour_list[-1]) + ".content_album_for_recs.txt", header=columns, index=False, sep="\t", encoding="UTF-8")
+
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+        for file_hour, sql in zip(file_hour_list, sql_list):
+            print(sql)
+            cursor.execute(sql)
+
+            result = cursor.fetchall()
+            columns = [item[0] for item in cursor.description]
+            tempDf = pd.DataFrame(result, columns=columns)
+
+            # tempDf[columns[1]] = tempDf[columns[1]].replace("\t", "")
+            # tempDf[columns[1]] = tempDf[columns[1]].replace({
+            #     "\t": "",
+            #     " ": "",
+            # })
+
+            # print(tempDf)
+            print("`dw_v2`.`user_ls_day_summary`", file_hour, tempDf.shape, columns, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            tempDf.to_csv("./impala_data/" + str(file_hour) + ".device_uuid_content_id.txt", header=False, index=False, sep="\t", encoding="UTF-8")
+
+            # for row in result:
+            #     print(row)
+            # print()
+
+except Exception as e:
+    print(f" Impala查询失败！原因：{str(e)}")
+
+finally:
+    cursor.close()
+    connection.close()
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-id_name_dict = {}
-page_name_dict = {}
-channel_id_dict = {}
-with open("./model_data/" + str(file_hour_list[-1]) + ".content_album_for_recs.txt", encoding="UTF-8") as file:
-    for line in file.readlines():
-        line = line.strip().split("\t")
-        page_name_dict.setdefault(line[0], [])
-        channel_id_dict.setdefault(line[0], [])
-        if line[1] not in page_name_dict[line[0]]:
-            page_name_dict[line[0]].append(line[1])
-            channel_id_dict[line[0]].append(line[-1])
-        id_name_dict[line[0]] = "#".join(page_name_dict[line[0]]) + "|" + line[2] + "|" + "#".join(channel_id_dict[line[0]])
-print("len(id_name_dict)", len(id_name_dict))
-
-with open("./model_data/" + str(content_hour_list[-1]) + ".id_name_dict.txt", "w", encoding="UTF-8") as file:
-    for key, value in id_name_dict.items():
-        file.write(key + "\t" + value + "\n")
-
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
+#
+# id_name_dict = {}
+# page_name_dict = {}
+# channel_id_dict = {}
+# with open("./model_data/" + str(file_hour_list[-1]) + ".content_album_for_recs.txt", encoding="UTF-8") as file:
+#     for line in file.readlines():
+#         line = line.strip().split("\t")
+#         page_name_dict.setdefault(line[0], [])
+#         channel_id_dict.setdefault(line[0], [])
+#         if line[1] not in page_name_dict[line[0]]:
+#             page_name_dict[line[0]].append(line[1])
+#             channel_id_dict[line[0]].append(line[-1])
+#         id_name_dict[line[0]] = "#".join(page_name_dict[line[0]]) + "|" + line[2] + "|" + "#".join(channel_id_dict[line[0]])
+# print("len(id_name_dict)", len(id_name_dict))
+#
+# with open("./model_data/" + str(content_hour_list[-1]) + ".id_name_dict.txt", "w", encoding="UTF-8") as file:
+#     for key, value in id_name_dict.items():
+#         file.write(key + "\t" + value + "\n")
+#
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
 # user_content_sequence_dict = {}
 # for file_hour in content_hour_list:
 #     with open("./impala_data/" + str(file_hour) + ".device_uuid_content_id.txt", encoding="UTF-8") as file:
@@ -388,154 +387,155 @@ with open("./model_data/" + str(content_hour_list[-1]) + ".id_name_dict.txt", "w
 # print("len(res_name_list)", len(res_name_list))
 # print("len(res_idx_channel)", len(res_idx_channel))
 # print("len(res_name_channel)", len(res_name_channel))
-
-
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
-def u2i_idx_name(user_his_seq_list, content_id_similarity_dict, id_name_dict, process_idx, start_idx, batch_size):
-    # top_k = min(3000, len(user_his_seq_list))
-    top_k = len(user_his_seq_list)
-    # print("len(user_his_seq_list)", len(user_his_seq_list))
-    start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(process_idx, "u2i_idx_name start", start_time, start_idx, start_idx + batch_size)
-    res_idx_channel = {}
-    res_his_dict = {}
-    res_name_dict = {}
-    for query_idx in range(start_idx, start_idx + batch_size):
-        if query_idx >= len(user_his_seq_list):
-            break
-        # if query_idx != start_idx and query_idx % 10000 == 0:
-        #     print(process_idx, query_idx, start_idx, start_idx + batch_size, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-
-        device_uuid, user_his_seq = user_his_seq_list[query_idx]
-        content_id_list = [item for item in user_his_seq.split(";") if item in content_id_similarity_dict]
-        unique_list = list(OrderedDict.fromkeys(content_id_list))
-        if len(content_id_list) <= 0 or len(content_id_list) != len(unique_list):
-            # print(query_idx, user_his_seq_list[query_idx], len(content_id_list), len(content_id_list), len(unique_list), content_id_list, unique_list)
-            continue
-        res_his_dict[device_uuid] = unique_list
-
-        for idx in range(min(len(content_id_similarity_dict) - 1, 2000)):
-            for item in unique_list:
-                if item in content_id_similarity_dict and content_id_similarity_dict[item][idx] not in unique_list:
-                    tmp_item = content_id_similarity_dict[item][idx]
-                    for page_name, channel_id in zip(id_name_dict[tmp_item].split("|")[0].split("#"), id_name_dict[tmp_item].split("|")[-1].split("#")):
-                        dict_key = device_uuid + "_" + channel_id + "|" + page_name
-                        res_idx_channel.setdefault(dict_key, [])
-                        res_name_dict.setdefault(device_uuid, [])
-                        if len(res_idx_channel[dict_key]) <= 300 and tmp_item not in res_idx_channel[dict_key]:
-                            res_idx_channel[dict_key].append(tmp_item)
-                        if len(res_name_dict[device_uuid]) <= 100 and tmp_item not in res_name_dict[device_uuid]:
-                            res_name_dict[device_uuid].append(tmp_item)
-
-    with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco_channel.txt", "w", encoding="UTF-8") as file:
-        for key, value in res_idx_channel.items():
-            # tmp_idx_res = [k + "|" + id_name_dict[k].split("|")[-1] for k in value]
-            file.write(key + "\t" + ";".join(value) + "\n")
-
-    with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco.txt", "w", encoding="UTF-8") as file:
-        for key, value in res_name_dict.items():
-            file.write(key + "\t" + ";".join(value) + "\n")
-
-    with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco_name.txt", "w", encoding="UTF-8") as file:
-        for key, value in res_name_dict.items():
-            tmp_his_res = [k + "|" + id_name_dict[k] for k in res_his_dict[key]]
-            tmp_idx_res = [k + "|" + id_name_dict[k] for k in value]
-            file.write(key + "\n" + " ; ".join(tmp_his_res) + "\n" + " ; ".join(tmp_idx_res) + "\n\n")
-
-    done_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    print(process_idx, "u2i_idx_name done ", done_time, start_idx, start_idx + batch_size, len(res_idx_channel), len(res_name_dict), len(res_his_dict))
-
-    return len(res_idx_channel), len(res_name_dict)
-
-
-content_id_similarity_dict = {}
-with open("./model_data/" + str(content_hour_list[-1]) + ".vectors_similarity.txt", encoding="UTF-8") as file:
-    for line in file.readlines():
-        line = line.strip().split("\t")
-        content_id_similarity_dict[line[0].split("|")[0]] = [item.split("|")[0] for item in line[1].split(";")]
-print("len(content_id_similarity_dict)", len(content_id_similarity_dict))
-
-user_his_seq_list = []
-with open("./sample_data/" + str(content_hour_list[-1]) + ".device_uuid_content_id_sequence.txt", encoding="UTF-8") as file:
-    for line in file.readlines():
-        line = line.strip().split("\t")
-        if len(line) != 2:
-            print(len(line), line)
-            continue
-        user_his_seq_list.append(line)
-print("len(user_his_seq_list)", len(user_his_seq_list))
-user_his_seq_list = user_his_seq_list
-
-pool = Pool(pool_num * 2)
-batch_size = 30000
-process_num = math.ceil(len(user_his_seq_list) / batch_size)
-print("process_num", process_num, len(user_his_seq_list), batch_size)
-results = []
-for process_idx in range(process_num):
-    # batch_size = math.ceil(len(user_his_seq_list) / 100)
-    start_idx = process_idx * batch_size
-    async_results = pool.apply_async(u2i_idx_name, args=(
-        user_his_seq_list,
-        content_id_similarity_dict,
-        id_name_dict,
-        process_idx,
-        start_idx,
-        batch_size,
-    ))
-    results.append(async_results)
-# p.map(long_time_task, [i for i in range(5)])
-print('Waiting for all subprocesses done...')
-pool.close()
-pool.join()
-
-res_idx = []
-res_name = []
-for item in results:
-    res_idx.append(item.get()[0])
-    res_name.append(item.get()[1])
-
-res_idx_channel = []
-res_idx_list = []
-res_name_list = []
-for process_idx in range(process_num):
-    with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco_channel.txt", encoding="UTF-8") as file:
-        for line in file.readlines():
-            res_idx_channel.append(line)
-    print(process_idx, "len(res_idx_channel)", len(res_idx_channel))
-
-    with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco.txt", encoding="UTF-8") as file:
-        for line in file.readlines():
-            res_idx_list.append(line)
-    print(process_idx, "len(res_idx_list)", len(res_idx_list))
-
-    with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco_name.txt", encoding="UTF-8") as file:
-        for line in file.readlines():
-            res_name_list.append(line)
-    print(process_idx, "len(res_name_list)", len(res_name_list))
-
-print("len(res_idx_channel)", len(res_idx_channel))
-print("len(res_name_list)", len(res_name_list))
-
-with open("./model_data/" + str(content_hour_list[-1]) + ".user_content_reco_channel.txt", "w", encoding="UTF-8") as file:
-    for line in res_idx_channel:
-        file.write(line)
-
-with open("./model_data/" + str(content_hour_list[-1]) + ".user_content_reco.txt", "w", encoding="UTF-8") as file:
-    for line in res_idx_list:
-        file.write(line)
-
-with open("./model_data/" + str(content_hour_list[-1]) + ".user_content_reco_name.txt", "w", encoding="UTF-8") as file:
-    for line in res_name_list:
-        file.write(line)
-
-print("res_idx", res_idx)
-print("res_name", res_name)
-print("len(res_idx_channel)", len(res_idx_channel))
-print("len(res_idx_list)", len(res_idx_list))
-print("len(res_name_list)", len(res_name_list))
-
+#
+#
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+#
+# def u2i_idx_name(user_his_seq_list, content_id_similarity_dict, id_name_dict, process_idx, start_idx, batch_size):
+#     # top_k = min(3000, len(user_his_seq_list))
+#     top_k = len(user_his_seq_list)
+#     # print("len(user_his_seq_list)", len(user_his_seq_list))
+#     start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+#     print(process_idx, "u2i_idx_name start", start_time, start_idx, start_idx + batch_size)
+#     res_idx_dict = {}
+#     res_his_dict = {}
+#     res_name_dict = {}
+#     for query_idx in range(start_idx, start_idx + batch_size):
+#         if query_idx >= len(user_his_seq_list):
+#             break
+#         # if query_idx != start_idx and query_idx % 10000 == 0:
+#         #     print(process_idx, query_idx, start_idx, start_idx + batch_size, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+#
+#         device_uuid, user_his_seq = user_his_seq_list[query_idx]
+#         content_id_list = [item for item in user_his_seq.split(";") if item in content_id_similarity_dict]
+#         unique_list = list(OrderedDict.fromkeys(content_id_list))
+#         if len(content_id_list) <= 0 or len(content_id_list) != len(unique_list):
+#             # print(query_idx, user_his_seq_list[query_idx], len(content_id_list), len(content_id_list), len(unique_list), content_id_list, unique_list)
+#             continue
+#         res_his_dict[device_uuid] = unique_list
+#
+#         for idx in range(min(len(content_id_similarity_dict) - 1, 2000)):
+#             for item in unique_list:
+#                 if item in content_id_similarity_dict and content_id_similarity_dict[item][idx] not in unique_list:
+#                     tmp_item = content_id_similarity_dict[item][idx]
+#                     for page_name, channel_id in zip(id_name_dict[tmp_item].split("|")[0].split("#"), id_name_dict[tmp_item].split("|")[-1].split("#")):
+#                         dict_key = device_uuid + "_" + channel_id + "|" + page_name
+#                         res_idx_dict.setdefault(dict_key, [])
+#                         res_name_dict.setdefault(device_uuid, [])
+#                         if len(res_idx_dict[dict_key]) <= 100 and tmp_item not in res_idx_dict[dict_key]:
+#                             res_idx_dict[dict_key].append(tmp_item)
+#                         if len(res_name_dict[device_uuid]) <= 100 and tmp_item not in res_name_dict[device_uuid]:
+#                             res_name_dict[device_uuid].append(tmp_item)
+#
+#     with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco_channel.txt", "w", encoding="UTF-8") as file:
+#         for key, value in res_idx_dict.items():
+#             # tmp_idx_res = [k + "|" + id_name_dict[k].split("|")[-1] for k in value]
+#             file.write(key + "\t" + ";".join(value) + "\n")
+#
+#     with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco.txt", "w", encoding="UTF-8") as file:
+#         for key, value in res_name_dict.items():
+#             file.write(key + "\t" + ";".join(value) + "\n")
+#
+#     with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco_name.txt", "w", encoding="UTF-8") as file:
+#         for key, value in res_name_dict.items():
+#             tmp_his_res = [k + "|" + id_name_dict[k] for k in res_his_dict[key]]
+#             tmp_idx_res = [k + "|" + id_name_dict[k] for k in value]
+#             file.write(key + "\n" + " ; ".join(tmp_his_res) + "\n" + " ; ".join(tmp_idx_res) + "\n\n")
+#
+#     done_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+#     print(process_idx, "u2i_idx_name done ", done_time, start_idx, start_idx + batch_size, len(res_idx_dict), len(res_name_dict), len(res_his_dict))
+#
+#     return len(res_idx_dict), len(res_name_dict)
+#
+#
+# content_id_similarity_dict = {}
+# with open("./model_data/" + str(content_hour_list[-1]) + ".vectors_similarity.txt", encoding="UTF-8") as file:
+#     for line in file.readlines():
+#         line = line.strip().split("\t")
+#         content_id_similarity_dict[line[0].split("|")[0]] = [item.split("|")[0] for item in line[1].split(";")]
+# print("len(content_id_similarity_dict)", len(content_id_similarity_dict))
+#
+# user_his_seq_list = []
+# with open("./sample_data/" + str(content_hour_list[-1]) + ".device_uuid_content_id_sequence.txt", encoding="UTF-8") as file:
+#     for line in file.readlines():
+#         line = line.strip().split("\t")
+#         if len(line) != 2:
+#             print(len(line), line)
+#             continue
+#         user_his_seq_list.append(line)
+# print("len(user_his_seq_list)", len(user_his_seq_list))
+# user_his_seq_list = user_his_seq_list
+#
+# pool = Pool(pool_num * 2)
+# batch_size = 30000
+# process_num = math.ceil(len(user_his_seq_list) / batch_size)
+# print("process_num", process_num, len(user_his_seq_list), batch_size)
+# results = []
+# for process_idx in range(process_num):
+#     # batch_size = math.ceil(len(user_his_seq_list) / 100)
+#     start_idx = process_idx * batch_size
+#     async_results = pool.apply_async(u2i_idx_name, args=(
+#         user_his_seq_list,
+#         content_id_similarity_dict,
+#         id_name_dict,
+#         process_idx,
+#         start_idx,
+#         batch_size,
+#     ))
+#     results.append(async_results)
+# # p.map(long_time_task, [i for i in range(5)])
+# print('Waiting for all subprocesses done...')
+# pool.close()
+# pool.join()
+#
+# res_idx = []
+# res_name = []
+# for item in results:
+#     res_idx.append(item.get()[0])
+#     res_name.append(item.get()[1])
+#
+# res_idx_list = []
+# res_all_list = []
+# res_name_list = []
+# for process_idx in range(process_num):
+#     with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco_channel.txt", encoding="UTF-8") as file:
+#         for line in file.readlines():
+#             res_idx_list.append(line)
+#     print(process_idx, "len(res_idx_list)", len(res_idx_list))
+#
+#     with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco.txt", encoding="UTF-8") as file:
+#         for line in file.readlines():
+#             res_all_list.append(line)
+#     print(process_idx, "len(res_all_list)", len(res_all_list))
+#
+#     with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco_name.txt", encoding="UTF-8") as file:
+#         for line in file.readlines():
+#             res_name_list.append(line)
+#     print(process_idx, "len(res_name_list)", len(res_name_list))
+#
+# print("len(res_idx_list)", len(res_idx_list))
+# print("len(res_all_list)", len(res_all_list))
+# print("len(res_name_list)", len(res_name_list))
+#
+# with open("./model_data/" + str(content_hour_list[-1]) + ".user_content_reco_channel.txt", "w", encoding="UTF-8") as file:
+#     for line in res_idx_list:
+#         file.write(line)
+#
+# with open("./model_data/" + str(content_hour_list[-1]) + ".user_content_reco.txt", "w", encoding="UTF-8") as file:
+#     for line in res_all_list:
+#         file.write(line)
+#
+# with open("./model_data/" + str(content_hour_list[-1]) + ".user_content_reco_name.txt", "w", encoding="UTF-8") as file:
+#     for line in res_name_list:
+#         file.write(line)
+#
+# print("res_idx", res_idx)
+# print("res_name", res_name)
+# print("len(res_idx_list)", len(res_idx_list))
+# print("len(res_all_list)", len(res_all_list))
+# print("len(res_name_list)", len(res_name_list))
+#
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 #
@@ -575,8 +575,8 @@ print("len(res_name_list)", len(res_name_list))
 # os.system("rm -rf ./model_data/" + str(pre_day) + ".vectors_similarity.txt")
 # print("rm -rf ./model_data/" + str(pre_day) + ".vectors_similarity_name.txt")
 # os.system("rm -rf ./model_data/" + str(pre_day) + ".vectors_similarity_name.txt")
-# print("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco.txt")
-# os.system("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco.txt")
+# print("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco_channel.txt")
+# os.system("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco_channel.txt")
 # print("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco_name.txt")
 # os.system("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco_name.txt")
 #

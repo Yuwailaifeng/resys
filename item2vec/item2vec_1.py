@@ -31,7 +31,7 @@ print(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-impala_hour = 5
+impala_hour = 3
 file_hour_list = []
 for idx in range(impala_hour):
     file_hour = (datetime.datetime.now() - datetime.timedelta(days=impala_hour - idx)).date().strftime("%Y%m%d")
@@ -101,7 +101,7 @@ try:
         columns = [item[0] for item in cursor.description]
         tempDf = pd.DataFrame(result, columns=columns)
 
-        print("content_album_for_recs", file_hour_list[-1], len(tempDf), columns)
+        print("content_album_for_recs", file_hour_list[-1], tempDf.shape, columns, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         tempDf.to_csv("./model_data/" + str(file_hour_list[-1]) + ".content_album_for_recs.txt", header=columns, index=False, sep="\t", encoding="UTF-8")
 
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -121,7 +121,7 @@ try:
             # })
 
             # print(tempDf)
-            print("`dw_v2`.`user_ls_day_summary`", file_hour, len(tempDf), columns)
+            print("`dw_v2`.`user_ls_day_summary`", file_hour, tempDf.shape, columns, datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             tempDf.to_csv("./impala_data/" + str(file_hour) + ".device_uuid_content_id.txt", header=False, index=False, sep="\t", encoding="UTF-8")
 
             # for row in result:
@@ -423,14 +423,18 @@ def u2i_idx_name(user_his_seq_list, content_id_similarity_dict, id_name_dict, pr
                         dict_key = device_uuid + "_" + channel_id + "|" + page_name
                         res_idx_dict.setdefault(dict_key, [])
                         res_name_dict.setdefault(device_uuid, [])
-                        if len(res_idx_dict[dict_key]) <= 300 and tmp_item not in res_idx_dict[dict_key]:
+                        if len(res_idx_dict[dict_key]) <= 100 and tmp_item not in res_idx_dict[dict_key]:
                             res_idx_dict[dict_key].append(tmp_item)
                         if len(res_name_dict[device_uuid]) <= 100 and tmp_item not in res_name_dict[device_uuid]:
                             res_name_dict[device_uuid].append(tmp_item)
 
-    with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco.txt", "w", encoding="UTF-8") as file:
+    with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco_channel.txt", "w", encoding="UTF-8") as file:
         for key, value in res_idx_dict.items():
             # tmp_idx_res = [k + "|" + id_name_dict[k].split("|")[-1] for k in value]
+            file.write(key + "\t" + ";".join(value) + "\n")
+
+    with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco.txt", "w", encoding="UTF-8") as file:
+        for key, value in res_name_dict.items():
             file.write(key + "\t" + ";".join(value) + "\n")
 
     with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco_name.txt", "w", encoding="UTF-8") as file:
@@ -492,12 +496,18 @@ for item in results:
     res_name.append(item.get()[1])
 
 res_idx_list = []
+res_all_list = []
 res_name_list = []
 for process_idx in range(process_num):
-    with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco.txt", encoding="UTF-8") as file:
+    with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco_channel.txt", encoding="UTF-8") as file:
         for line in file.readlines():
             res_idx_list.append(line)
     print(process_idx, "len(res_idx_list)", len(res_idx_list))
+
+    with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco.txt", encoding="UTF-8") as file:
+        for line in file.readlines():
+            res_all_list.append(line)
+    print(process_idx, "len(res_all_list)", len(res_all_list))
 
     with open("./tmp_data/" + str(content_hour_list[-1]) + "." + str(process_idx) + ".user_content_reco_name.txt", encoding="UTF-8") as file:
         for line in file.readlines():
@@ -505,10 +515,15 @@ for process_idx in range(process_num):
     print(process_idx, "len(res_name_list)", len(res_name_list))
 
 print("len(res_idx_list)", len(res_idx_list))
+print("len(res_all_list)", len(res_all_list))
 print("len(res_name_list)", len(res_name_list))
 
-with open("./model_data/" + str(content_hour_list[-1]) + ".user_content_reco.txt", "w", encoding="UTF-8") as file:
+with open("./model_data/" + str(content_hour_list[-1]) + ".user_content_reco_channel.txt", "w", encoding="UTF-8") as file:
     for line in res_idx_list:
+        file.write(line)
+
+with open("./model_data/" + str(content_hour_list[-1]) + ".user_content_reco.txt", "w", encoding="UTF-8") as file:
+    for line in res_all_list:
         file.write(line)
 
 with open("./model_data/" + str(content_hour_list[-1]) + ".user_content_reco_name.txt", "w", encoding="UTF-8") as file:
@@ -518,6 +533,7 @@ with open("./model_data/" + str(content_hour_list[-1]) + ".user_content_reco_nam
 print("res_idx", res_idx)
 print("res_name", res_name)
 print("len(res_idx_list)", len(res_idx_list))
+print("len(res_all_list)", len(res_all_list))
 print("len(res_name_list)", len(res_name_list))
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -559,8 +575,8 @@ print("rm -rf ./model_data/" + str(pre_day) + ".vectors_similarity.txt")
 os.system("rm -rf ./model_data/" + str(pre_day) + ".vectors_similarity.txt")
 print("rm -rf ./model_data/" + str(pre_day) + ".vectors_similarity_name.txt")
 os.system("rm -rf ./model_data/" + str(pre_day) + ".vectors_similarity_name.txt")
-print("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco.txt")
-os.system("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco.txt")
+print("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco_channel.txt")
+os.system("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco_channel.txt")
 print("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco_name.txt")
 os.system("rm -rf ./model_data/" + str(pre_day) + ".user_content_reco_name.txt")
 

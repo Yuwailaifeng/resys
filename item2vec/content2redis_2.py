@@ -110,7 +110,7 @@ for key, value in user_count_reco_dict.items():
 print("len(user_count_reco_dict)", len(user_count_reco_dict))
 key_num += len(user_count_reco_dict)
 
-with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
+with redis.Redis(host="10.129.23.11", port=6379, db=2) as client:
     print("redis_version: ", client.info()["redis_version"])
     client.flushdb()
     pipeline = client.pipeline()
@@ -153,7 +153,7 @@ for key, value in all_content_reco_dict.items():
 print("len(all_content_reco_dict)", len(all_content_reco_dict))
 key_num += len(all_content_reco_dict)
 
-with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
+with redis.Redis(host="10.129.23.11", port=6379, db=2) as client:
     # print("redis_version: ", client.info()["redis_version"])
     # client.flushdb()
     pipeline = client.pipeline()
@@ -189,7 +189,7 @@ with open(user_trigger_file_list[0], encoding="UTF-8") as file:
 print("len(album_i2i_trigger_dict)", len(album_i2i_trigger_dict), count)
 key_num += count
 
-with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
+with redis.Redis(host="10.129.23.11", port=6379, db=2) as client:
     # print("redis_version: ", client.info()["redis_version"])
     # client.flushdb()
     pipeline = client.pipeline()
@@ -223,7 +223,7 @@ with open(user_trigger_file_list[1], encoding="UTF-8") as file:
 print("len(single_i2i_trigger_dict)", len(single_i2i_trigger_dict), count)
 key_num += count
 
-with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
+with redis.Redis(host="10.129.23.11", port=6379, db=2) as client:
     # print("redis_version: ", client.info()["redis_version"])
     # client.flushdb()
     pipeline = client.pipeline()
@@ -257,7 +257,7 @@ with open(i2i_recall_file_list[0], encoding="UTF-8") as file:
 print("len(album_i2i_dict)", len(album_i2i_dict), count)
 key_num += count
 
-with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
+with redis.Redis(host="10.129.23.11", port=6379, db=2) as client:
     # print("redis_version: ", client.info()["redis_version"])
     # client.flushdb()
     pipeline = client.pipeline()
@@ -291,7 +291,7 @@ with open(i2i_recall_file_list[1], encoding="UTF-8") as file:
 print("len(single_i2i_dict)", len(single_i2i_dict), count)
 key_num += count
 
-with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
+with redis.Redis(host="10.129.23.11", port=6379, db=2) as client:
     # print("redis_version: ", client.info()["redis_version"])
     # client.flushdb()
     pipeline = client.pipeline()
@@ -328,7 +328,7 @@ with open(u2i_recall_file_list[0], encoding="UTF-8") as file:
 print("len(album_u2i_dict)", len(album_u2i_dict), count)
 key_num += count
 
-with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
+with redis.Redis(host="10.129.23.11", port=6379, db=2) as client:
     # print("redis_version: ", client.info()["redis_version"])
     # client.flushdb()
     pipeline = client.pipeline()
@@ -365,7 +365,7 @@ with open(u2i_recall_file_list[1], encoding="UTF-8") as file:
 print("len(single_u2i_dict)", len(single_u2i_dict), count)
 key_num += count
 
-with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
+with redis.Redis(host="10.129.23.11", port=6379, db=2) as client:
     # print("redis_version: ", client.info()["redis_version"])
     # client.flushdb()
     pipeline = client.pipeline()
