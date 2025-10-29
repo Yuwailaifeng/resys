@@ -49,7 +49,7 @@ echo "${current_date}"
 #fi
 
 
-#30 05 * * * cd /data/azx_reco/yt_recall && sh -x run_item2vec.sh 1>>./log/$(date +"\%Y-\%m-\%d_\%H").log.txt 2>&1
+#docker exec -it redis-server redis-cli
 #30 05 * * * cd /data/azx_reco/yt_recall && sh -x run_item2vec.sh 1>>./log/$(date +"\%Y\%m\%d\%H").log.txt 2>&1
 #ps aux | grep grpc_server | awk '{print $2}' | xargs kill -9
 #ps aux | grep item2vec | awk '{print $2}' | xargs kill -9
