@@ -57,8 +57,8 @@ echo "${current_date}"
 #nohup python3 -u grpc_server.py  1>>./log.txt 2>&1 &
 
 
-command_1="cd /data/azx_reco/yt_recall/item2vec_1"
-command_2="python3 -u item2vec_1.py >>./item2vec_1/log/${current_date}_log.txt"
+command_1="cd /data/azx_reco/yt_recall/item2vec_album"
+command_2="python3 -u item2vec_album.py >>./item2vec_album/log/${current_date}_log.txt"
 retries=10
 count=0
 while true; do
@@ -76,8 +76,8 @@ done
 echo ${command_1} ${command_2} "SUCCESS" $(date +%Y-%m-%d\ %H:%M:%S)
 
 
-command_1="cd /data/azx_reco/yt_recall/item2vec_7"
-command_2="python3 -u item2vec_7.py >>./item2vec_7/log/${current_date}_log.txt"
+command_1="cd /data/azx_reco/yt_recall/item2vec_single"
+command_2="python3 -u item2vec_single.py >>./item2vec_single/log/${current_date}_log.txt"
 retries=10
 count=0
 while true; do
@@ -88,26 +88,7 @@ while true; do
         exit
     fi
     echo "Retry..." $(date +%Y-%m-%d\ %H:%M:%S)
-    sleep 900
-    count=$((count+1))
-    echo ${count}
-done
-echo ${command_1} ${command_2} "SUCCESS" $(date +%Y-%m-%d\ %H:%M:%S)
-
-
-command_1="cd /data/azx_reco/yt_recall"
-command_2="python3 -u content2redis_1.py >>./log/${current_date}_log.txt"
-retries=10
-count=0
-while true; do
-    echo ${command_1} ${command_2}
-    ${command_1} && ${command_2} && break
-    if [ $count -eq $retries ]; then
-        echo "EXIT" $(date +%Y-%m-%d\ %H:%M:%S)
-        exit
-    fi
-    echo "Retry..." $(date +%Y-%m-%d\ %H:%M:%S)
-    sleep 900
+    sleep 100
     count=$((count+1))
     echo ${count}
 done
@@ -115,7 +96,26 @@ echo ${command_1} ${command_2} "SUCCESS" $(date +%Y-%m-%d\ %H:%M:%S)
 
 
 command_1="cd /data/azx_reco/yt_recall"
-command_2="python3 -u content2redis_2.py >>./log/${current_date}_log.txt"
+command_2="python3 -u content2redis_all.py >>./log/${current_date}_all_log.txt"
+retries=10
+count=0
+while true; do
+    echo ${command_1} ${command_2}
+    ${command_1} && ${command_2} && break
+    if [ $count -eq $retries ]; then
+        echo "EXIT" $(date +%Y-%m-%d\ %H:%M:%S)
+        exit
+    fi
+    echo "Retry..." $(date +%Y-%m-%d\ %H:%M:%S)
+    sleep 100
+    count=$((count+1))
+    echo ${count}
+done
+echo ${command_1} ${command_2} "SUCCESS" $(date +%Y-%m-%d\ %H:%M:%S)
+
+
+command_1="cd /data/azx_reco/yt_recall"
+command_2="python3 -u content2redis_channel.py >>./log/${current_date}_channel_log.txt"
 retries=10
 count=0
 while true; do
