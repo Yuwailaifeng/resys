@@ -305,12 +305,12 @@ similarity_score_list = similarity_v1.tolist()
 print("len(similarity_score_list)", len(similarity_score_list))
 
 pool = Pool(pool_num)
-batch_size = 700
+# batch_size = 700
+batch_size = math.ceil(len(similarity_score_list) / pool_num)
 process_num = math.ceil(len(similarity_score_list) / batch_size)
 print("process_num", process_num, len(similarity_score_list), batch_size)
 results = []
 for process_idx in range(process_num):
-    # batch_size = math.ceil(len(user_his_seq_list) / 100)
     start_idx = process_idx * batch_size
     async_results = pool.apply_async(i2i_idx_name, args=(
         similarity_score_list,
@@ -450,12 +450,12 @@ print("len(user_his_seq_list)", len(user_his_seq_list))
 user_his_seq_list = user_his_seq_list
 
 pool = Pool(pool_num * 2)
-batch_size = 20000
+# batch_size = 20000
+batch_size = math.ceil(len(user_his_seq_list) / (pool_num * 2))
 process_num = math.ceil(len(user_his_seq_list) / batch_size)
 print("process_num", process_num, len(user_his_seq_list), batch_size)
 results = []
 for process_idx in range(process_num):
-    # batch_size = math.ceil(len(user_his_seq_list) / 100)
     start_idx = process_idx * batch_size
     async_results = pool.apply_async(u2i_idx_name, args=(
         user_his_seq_list,
@@ -534,7 +534,7 @@ os.system("ls -lah ./impala_data")
 os.system("ls -lah ./sample_data")
 os.system("ls -lah ./model_data")
 
-hdfs_file_path = "/user/admin/an_zhong_xin/yt_recall/item2vec_7/" + str(content_hour_list[-1] + "/")
+hdfs_file_path = "/user/admin/an_zhong_xin/yt_recall/item2vec_single/" + str(content_hour_list[-1] + "/")
 print("hdfs_file_path", hdfs_file_path)
 
 print("hadoop fs -mkdir " + hdfs_file_path)

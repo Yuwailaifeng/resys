@@ -33,28 +33,28 @@ recall_name_list = [
 ]
 
 all_content_recall_file_list = [
-    "item2vec_1/model_data/" + str(file_hour) + ".content_album_for_recs.txt",
-    "item2vec_7/model_data/" + str(file_hour) + ".content_single_for_recs.txt",
+    "item2vec_album/model_data/" + str(file_hour) + ".content_album_for_recs.txt",
+    "item2vec_single/model_data/" + str(file_hour) + ".content_single_for_recs.txt",
 ]
 
 user_count_recall_file_list = [
-    "item2vec_1/model_data/" + str(file_hour) + ".content_count.txt",
-    "item2vec_7/model_data/" + str(file_hour) + ".content_count.txt",
+    "item2vec_album/model_data/" + str(file_hour) + ".content_count.txt",
+    "item2vec_single/model_data/" + str(file_hour) + ".content_count.txt",
 ]
 
 user_trigger_file_list = [
-    "item2vec_1/sample_data/" + str(file_hour) + ".device_uuid_content_id_sequence.txt",
-    "item2vec_7/sample_data/" + str(file_hour) + ".device_uuid_content_id_sequence.txt",
+    "item2vec_album/sample_data/" + str(file_hour) + ".device_uuid_content_id_sequence.txt",
+    "item2vec_single/sample_data/" + str(file_hour) + ".device_uuid_content_id_sequence.txt",
 ]
 
 i2i_recall_file_list = [
-    "item2vec_1/model_data/" + str(file_hour) + ".content_similarity.txt",
-    "item2vec_7/model_data/" + str(file_hour) + ".content_similarity.txt",
+    "item2vec_album/model_data/" + str(file_hour) + ".content_similarity.txt",
+    "item2vec_single/model_data/" + str(file_hour) + ".content_similarity.txt",
 ]
 
 u2i_recall_file_list = [
-    "item2vec_1/model_data/" + str(file_hour) + ".user_content_reco.txt",
-    "item2vec_7/model_data/" + str(file_hour) + ".user_content_reco.txt",
+    "item2vec_album/model_data/" + str(file_hour) + ".user_content_reco.txt",
+    "item2vec_single/model_data/" + str(file_hour) + ".user_content_reco.txt",
 ]
 
 for file_name in all_content_recall_file_list:
