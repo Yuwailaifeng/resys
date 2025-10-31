@@ -67,29 +67,6 @@ class Reco(RecoServiceServicer):
         # print("context:", context)
         # print()
 
-        redis_key_list = []
-        for content_type_label in recall_content_type_list:
-            for recall_reason_label in recall_reason_list:
-                tmp_key = channel_id + "_" + content_type_label + "_" + recall_reason_label
-                redis_key_list.append(tmp_key)
-                print(log_key, len(redis_key_list), "redis_key", tmp_key)
-        print()
-
-        with redis.Redis(host="10.129.23.11", port=6379, db=2) as client:
-            pipeline = client.pipeline()
-            pipeline.mget(redis_key_list)
-            result = pipeline.execute()
-            album_user_count = result[0][0].decode("utf-8").split(";") if result[0][0] else []
-            album_all_content = result[0][1].decode("utf-8").split(";") if result[0][1] else []
-            single_user_count = result[0][2].decode("utf-8").split(";") if result[0][2] else []
-            single_all_content = result[0][3].decode("utf-8").split(";") if result[0][3] else []
-            print(log_key, "Result: ", "reco_from_redis: ", len(result[0]))
-            print(log_key, "result from redis: len(album_user_count): ", len(album_user_count))
-            print(log_key, "result from redis: len(album_all_content): ", len(album_all_content))
-            print(log_key, "result from redis: len(single_user_count): ", len(single_user_count))
-            print(log_key, "result from redis: len(single_all_content): ", len(single_all_content))
-        print()
-
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -112,41 +89,63 @@ class Reco(RecoServiceServicer):
         print()
 
         album_i2i_reco_list = []
-        if len(album_i2i_trigger) > 0:
-            album_i2i_key_list = [item + "_" + channel_id + "_album_i2i" for item in album_i2i_trigger]
-            with redis.Redis(host="10.129.23.11", port=6379, db=2) as client:
+        single_i2i_reco_list = []
+        if len(album_i2i_trigger) > 0 or len(single_i2i_trigger) > 0:
+            album_i2i_key_list = [item + "_album_i2i" for item in album_i2i_trigger]
+            single_i2i_key_list = [item + "_single_i2i" for item in single_i2i_trigger]
+            with redis.Redis(host="10.129.23.11", port=6379, db=1) as client:
                 pipeline = client.pipeline()
-                pipeline.mget(album_i2i_key_list)
-                result = pipeline.execute()
-                album_i2i_reco_list = [item.decode("utf-8").split(";") if item else [] for item in result[0]]
-                print(log_key, "Result: ", "album_i2i_reco_from_redis: ", len(result[0]))
-                print(log_key, "len(album_i2i_trigger): ", len(album_i2i_trigger))
-                print(log_key, "len(album_i2i_key_list): ", len(album_i2i_key_list))
-                print(log_key, "len(album_i2i_reco_list): ", len(album_i2i_reco_list))
-                # print("album_i2i_trigger", album_i2i_trigger)
-                # print("album_i2i_key_list", album_i2i_key_list)
+
+                if len(album_i2i_key_list) > 0:
+                    pipeline.mget(album_i2i_key_list)
+                    result = pipeline.execute()
+                    album_i2i_reco_list = [item.decode("utf-8").split(";") if item else [] for item in result[0]]
+                    print(log_key, "Result: ", "album_i2i_reco_from_redis: ", len(result[0]))
+                    print(log_key, "len(album_i2i_trigger): ", len(album_i2i_trigger))
+                    print(log_key, "len(album_i2i_key_list): ", len(album_i2i_key_list))
+                    print(log_key, "len(album_i2i_reco_list): ", len(album_i2i_reco_list))
+
+                if len(single_i2i_key_list) > 0:
+                    pipeline.mget(single_i2i_key_list)
+                    result = pipeline.execute()
+                    single_i2i_reco_list = [item.decode("utf-8").split(";") if item else [] for item in result[0]]
+                    print(log_key, "Result: ", "single_i2i_reco_from_redis: ", len(result[0]))
+                    print(log_key, "len(single_i2i_trigger): ", len(single_i2i_trigger))
+                    print(log_key, "len(single_i2i_key_list): ", len(single_i2i_key_list))
+                    print(log_key, "len(single_i2i_reco_list): ", len(single_i2i_reco_list))
+                    print(log_key, "len(single_i2i_reco_list[0]): ", len(single_i2i_reco_list[0]))
+
                 for i in range(len(album_i2i_trigger)):
-                    print(i, "album_i2i_trigger", album_i2i_key_list[i], album_i2i_reco_list[i][:10])
+                    print(i, "album_trigger", album_i2i_key_list[i], album_i2i_reco_list[i][:10])
+                for i in range(len(single_i2i_trigger)):
+                    print(i, "single_trigger", single_i2i_key_list[i], single_i2i_reco_list[i][:10])
         print()
 
-        single_i2i_reco_list = []
-        if len(single_i2i_trigger) > 0:
-            single_i2i_key_list = [item + "_" + channel_id + "_single_i2i" for item in single_i2i_trigger]
-            with redis.Redis(host="10.129.23.11", port=6379, db=2) as client:
-                pipeline = client.pipeline()
-                pipeline.mget(single_i2i_key_list)
-                result = pipeline.execute()
-                single_i2i_reco_list = [item.decode("utf-8").split(";") if item else [] for item in result[0]]
-                print(log_key, "Result: ", "single_i2i_reco_from_redis: ", len(result[0]))
-                print(log_key, "len(single_i2i_trigger): ", len(single_i2i_trigger))
-                print(log_key, "len(single_i2i_key_list): ", len(single_i2i_key_list))
-                print(log_key, "len(single_i2i_reco_list): ", len(single_i2i_reco_list))
-                print(log_key, "len(single_i2i_reco_list[0]): ", len(single_i2i_reco_list[0]))
-                # print("single_i2i_trigger", single_i2i_trigger)
-                # print("single_i2i_key_list", single_i2i_key_list)
-                for i in range(len(single_i2i_trigger)):
-                    print(i, "single_i2i_trigger", single_i2i_key_list[i], single_i2i_reco_list[i][:10])
-            print()
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+        redis_key_list = []
+        for content_type_label in recall_content_type_list:
+            for recall_reason_label in recall_reason_list:
+                tmp_key = channel_id + "_" + content_type_label + "_" + recall_reason_label
+                redis_key_list.append(tmp_key)
+                print(log_key, len(redis_key_list), "redis_key", tmp_key)
+        print()
+
+        with redis.Redis(host="10.129.23.11", port=6379, db=2) as client:
+            pipeline = client.pipeline()
+            pipeline.mget(redis_key_list)
+            result = pipeline.execute()
+            album_user_count = result[0][0].decode("utf-8").split(";") if result[0][0] else []
+            album_all_content = result[0][1].decode("utf-8").split(";") if result[0][1] else []
+            single_user_count = result[0][2].decode("utf-8").split(";") if result[0][2] else []
+            single_all_content = result[0][3].decode("utf-8").split(";") if result[0][3] else []
+            print(log_key, "Result: ", "reco_from_redis: ", len(result[0]))
+            print(log_key, "result from redis: len(album_user_count): ", len(album_user_count))
+            print(log_key, "result from redis: len(album_all_content): ", len(album_all_content))
+            print(log_key, "result from redis: len(single_user_count): ", len(single_user_count))
+            print(log_key, "result from redis: len(single_all_content): ", len(single_all_content))
+        print()
 
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
         # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
