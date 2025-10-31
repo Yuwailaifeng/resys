@@ -15,14 +15,12 @@ import random
 from content_pb2_grpc import add_RecoServiceServicer_to_server, RecoServiceServicer
 from content_pb2 import RecoRequest, RecoResponse
 
-
 recall_content_type_list = [
     "album",
     "single",
 ]
 
 recall_reason_list = [
-    # "i2i_trigger",
     "user_count",
     "all_content",
 ]
@@ -102,7 +100,7 @@ class Reco(RecoServiceServicer):
             print(log_key, len(i2i_trigger_redis_key_list), "redis_key", tmp_key)
         print()
 
-        with redis.Redis(host="10.129.23.11", port=6379, db=2) as client:
+        with redis.Redis(host="10.129.23.11", port=6379, db=0) as client:
             pipeline = client.pipeline()
             pipeline.mget(i2i_trigger_redis_key_list)
             result = pipeline.execute()
