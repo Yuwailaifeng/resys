@@ -423,7 +423,7 @@ def u2i_idx_name(user_his_seq_list, content_id_similarity_dict, id_name_dict, pr
         for key, value in res_name_dict.items():
             tmp_his_res = [k + "|" + id_name_dict[k] for k in res_his_dict[key]]
             tmp_idx_res = [k + "|" + id_name_dict[k] for k in value]
-            file.write(key + "\n" + " ; ".join(tmp_his_res) + "\n" + " ; ".join(tmp_idx_res) + "\n\n")
+            file.write(key + "\n用户收听历史：" + " ; ".join(tmp_his_res) + "\n个性化推荐内容：" + " ; ".join(tmp_idx_res) + "\n\n")
 
     done_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     print(process_idx, "u2i_idx_name done ", done_time, start_idx, start_idx + batch_size, len(res_idx_dict), len(res_name_dict), len(res_his_dict))

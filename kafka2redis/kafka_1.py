@@ -55,10 +55,10 @@ user_trigger_file_list = [
 #
 # done_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 # print("album_i2i_trigger done", key_num, done_time, "\n")
-
+#
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-
+#
 # start_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 # print("single_i2i_trigger start", start_time)
 #
@@ -89,6 +89,7 @@ user_trigger_file_list = [
 #
 # done_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 # print("single_i2i_trigger done", key_num, done_time, "\n")
+
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
@@ -143,7 +144,7 @@ def item2redis(start_time, uuid, albumid, songid, timestampByNewADD):
 
 consumer = KafkaConsumer(
     "recommend_topic",
-    group_id="reco_gpu",
+    group_id="reco_gpu_kafka_1",
     bootstrap_servers=[
         "10.129.31.22:9092",
         "10.129.31.23:9092",
@@ -152,17 +153,24 @@ consumer = KafkaConsumer(
     auto_offset_reset="earliest",
 )
 
+count_all = 0
+count_redis = 0
 while True:
     for msg in consumer:
+        count_all += 1
         try:
             start_time = time.time()
             json_data = json.loads(msg.value.decode("utf-8"))
             if json_data["dsource"] == "albumv3":
                 # print(json_data["uuid"], json_data["albumid"], json_data["songid"], json_data["timestampByNewADD"])
                 item2redis(start_time, json_data["uuid"], json_data["albumid"], json_data["songid"], json_data["timestampByNewADD"])
+                count_redis += 1
         except:
             # print("Except", msg)
             continue
+
+        if count_all % 100000 == 0:
+            print("count_redis", count_redis, count_all, count_redis / count_all)
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
