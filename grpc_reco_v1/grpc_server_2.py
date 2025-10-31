@@ -22,7 +22,7 @@ recall_content_type_list = [
 ]
 
 recall_reason_list = [
-    "i2i_trigger",
+    # "i2i_trigger",
     "user_count",
     "all_content",
 ]
@@ -72,10 +72,7 @@ class Reco(RecoServiceServicer):
         redis_key_list = []
         for content_type_label in recall_content_type_list:
             for recall_reason_label in recall_reason_list:
-                if recall_reason_label == "i2i_trigger":
-                    tmp_key = device_uuid + "_" + content_type_label + "_" + recall_reason_label
-                else:
-                    tmp_key = channel_id + "_" + content_type_label + "_" + recall_reason_label
+                tmp_key = channel_id + "_" + content_type_label + "_" + recall_reason_label
                 redis_key_list.append(tmp_key)
                 print(log_key, len(redis_key_list), "redis_key", tmp_key)
         print()
@@ -84,19 +81,36 @@ class Reco(RecoServiceServicer):
             pipeline = client.pipeline()
             pipeline.mget(redis_key_list)
             result = pipeline.execute()
-            album_i2i_trigger = result[0][0].decode("utf-8").split(";") if result[0][0] else []
-            album_user_count = result[0][1].decode("utf-8").split(";") if result[0][1] else []
-            album_all_content = result[0][2].decode("utf-8").split(";") if result[0][2] else []
-            single_i2i_trigger = result[0][3].decode("utf-8").split(";") if result[0][3] else []
-            single_user_count = result[0][4].decode("utf-8").split(";") if result[0][4] else []
-            single_all_content = result[0][5].decode("utf-8").split(";") if result[0][5] else []
+            album_user_count = result[0][0].decode("utf-8").split(";") if result[0][0] else []
+            album_all_content = result[0][1].decode("utf-8").split(";") if result[0][1] else []
+            single_user_count = result[0][2].decode("utf-8").split(";") if result[0][2] else []
+            single_all_content = result[0][3].decode("utf-8").split(";") if result[0][3] else []
             print(log_key, "Result: ", "reco_from_redis: ", len(result[0]))
-            print(log_key, "result from redis: len(album_i2i_trigger): ", len(album_i2i_trigger))
             print(log_key, "result from redis: len(album_user_count): ", len(album_user_count))
             print(log_key, "result from redis: len(album_all_content): ", len(album_all_content))
-            print(log_key, "result from redis: len(single_i2i_trigger): ", len(single_i2i_trigger))
             print(log_key, "result from redis: len(single_user_count): ", len(single_user_count))
             print(log_key, "result from redis: len(single_all_content): ", len(single_all_content))
+        print()
+
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+        i2i_trigger_redis_key_list = []
+        for content_type_label in recall_content_type_list:
+            tmp_key = device_uuid + "_" + content_type_label + "_i2i_trigger"
+            i2i_trigger_redis_key_list.append(tmp_key)
+            print(log_key, len(i2i_trigger_redis_key_list), "redis_key", tmp_key)
+        print()
+
+        with redis.Redis(host="10.129.23.11", port=6379, db=2) as client:
+            pipeline = client.pipeline()
+            pipeline.mget(i2i_trigger_redis_key_list)
+            result = pipeline.execute()
+            album_i2i_trigger = result[0][0].decode("utf-8").split(";") if result[0][0] else []
+            single_i2i_trigger = result[0][1].decode("utf-8").split(";") if result[0][1] else []
+            print(log_key, "Result: ", "reco_from_redis: ", len(result[0]))
+            print(log_key, "result from redis: len(album_i2i_trigger): ", len(album_i2i_trigger))
+            print(log_key, "result from redis: len(single_i2i_trigger): ", len(single_i2i_trigger))
         print()
 
         album_i2i_reco_list = []
@@ -135,6 +149,9 @@ class Reco(RecoServiceServicer):
                 for i in range(len(single_i2i_trigger)):
                     print(i, "single_i2i_trigger", single_i2i_key_list[i], single_i2i_reco_list[i][:10])
             print()
+
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
         content_reco_result = []
         content_reco_set = set()
@@ -212,6 +229,9 @@ class Reco(RecoServiceServicer):
         single_all_content_reco_num = len(content_reco_result) - num
         print("len(content_reco_result)", len(content_reco_result), "single_all_content_reco_num", single_all_content_reco_num)
 
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
         u2i_redis_key_list = []
         for content_type_label in recall_content_type_list:
             tmp_key = device_uuid + "_" + channel_id + "_" + content_type_label + "_u2i"
@@ -245,6 +265,9 @@ class Reco(RecoServiceServicer):
             content_reco_result.append(contend_id + "|" + str(content_type_id_dict["single"]) + "|u2i")
         single_u2i_reco_num = len(content_reco_result) - num
         print("len(content_reco_result)", len(content_reco_result), "single_u2i_reco_num", single_u2i_reco_num)
+
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
         reco_response = RecoResponse()
         content_id_list = []

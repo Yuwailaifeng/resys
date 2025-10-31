@@ -99,6 +99,9 @@ class Reco(RecoServiceServicer):
             print(log_key, "result from redis: len(single_all_content): ", len(single_all_content))
         print()
 
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+        
         album_i2i_reco_list = []
         if len(album_i2i_trigger) > 0:
             album_i2i_key_list = [item + "_" + channel_id + "_album_i2i" for item in album_i2i_trigger]
@@ -135,6 +138,9 @@ class Reco(RecoServiceServicer):
                 for i in range(len(single_i2i_trigger)):
                     print(i, "single_i2i_trigger", single_i2i_key_list[i], single_i2i_reco_list[i][:10])
             print()
+
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
         content_reco_result = []
         content_reco_set = set()
@@ -212,6 +218,9 @@ class Reco(RecoServiceServicer):
         single_all_content_reco_num = len(content_reco_result) - num
         print("len(content_reco_result)", len(content_reco_result), "single_all_content_reco_num", single_all_content_reco_num)
 
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
         u2i_redis_key_list = []
         for content_type_label in recall_content_type_list:
             tmp_key = device_uuid + "_" + channel_id + "_" + content_type_label + "_u2i"
@@ -245,6 +254,9 @@ class Reco(RecoServiceServicer):
             content_reco_result.append(contend_id + "|" + str(content_type_id_dict["single"]) + "|u2i")
         single_u2i_reco_num = len(content_reco_result) - num
         print("len(content_reco_result)", len(content_reco_result), "single_u2i_reco_num", single_u2i_reco_num)
+
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+        # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
         reco_response = RecoResponse()
         content_id_list = []
